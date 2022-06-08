@@ -38,8 +38,8 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
-
+  nodePorts:
+    http: ""
 ingress:
   enabled: false
   className: ""
