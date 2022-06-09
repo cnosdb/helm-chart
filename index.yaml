@@ -3,6 +3,16 @@ entries:
   cnosdb:
   - apiVersion: v2
     appVersion: 1.0.1
+    created: "2022-06-09T01:56:47.407351912Z"
+    description: A Helm chart for Kubernetes
+    digest: 1735d07bd6563e3fd07a14291ee9dd7e5efff8f3b9f7690afbc97d10ce20db60
+    name: cnosdb
+    type: application
+    urls:
+    - https://github.com/cnosdb/helm-chart/releases/download/cnosdb-0.1.1/cnosdb-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    appVersion: 1.0.1
     created: "2022-06-08T18:36:05.12030856+08:00"
     description: A Helm chart for Kubernetes
     digest: 9f364f2aa7951f657e70c8c93dc12c3dc4e72cd0043e6cb2deea886a5210f993
