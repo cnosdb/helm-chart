@@ -1,0 +1,11 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "cnosdb.fullname" . }}-meta
+  labels:
+    app.kubernetes.io/component: cnosdb-meta
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/component: cnosdb-meta
+  maxUnavailable: {{ .Values.config.meta.maxUnavailable | default 2 }}

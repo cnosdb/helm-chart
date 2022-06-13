@@ -1,4 +1,4 @@
-InfluxDB can be accessed via port {{ .Values.config.http.bind_address | default 8086 }} on the following DNS name from within your cluster:
+CnosDB can be accessed via port {{ .Values.config.http.bind_address | default 8086 }} on the following DNS name from within your cluster:
 
   http://{{ include "cnosdb.fullname" . }}.{{ .Release.Namespace }}:{{ .Values.config.http.bind_address | default 8086 }}
 
@@ -6,11 +6,11 @@ You can connect to the remote instance with the cnos CLI. To forward the API por
 
   kubectl port-forward --namespace {{ .Release.Namespace }} $(kubectl get pods --namespace {{ .Release.Namespace }} -l app={{ include "cnosdb.fullname" . }} -o jsonpath='{ .items[0].metadata.name }') 8086:{{ .Values.config.http.bind_address | default 8086 }}
 
-You can also connect to the cnos CLI from inside the container. To open a shell session in the InfluxDB pod, run the following:
+You can also connect to the cnos CLI from inside the container. To open a shell session in the CnosDB pod, run the following:
 
   kubectl exec -i -t --namespace {{ .Release.Namespace }} $(kubectl get pods --namespace {{ .Release.Namespace }} -l app={{ include "cnosdb.fullname" . }} -o jsonpath='{.items[0].metadata.name}') /bin/sh
 
-To view the logs for the InfluxDB pod, run the following:
+To view the logs for the CnosDB pod, run the following:
 
   kubectl logs -f --namespace {{ .Release.Namespace }} $(kubectl get pods --namespace {{ .Release.Namespace }} -l app={{ include "cnosdb.fullname" . }} -o jsonpath='{ .items[0].metadata.name }')
 

@@ -1,29 +1,42 @@
 image:
-  repository: "cnosdb/cnosdb"
-  tag: "1.0.1"
-  pullPolicy: IfNotPresent
+  meta:
+    repository: "cnosdb/cnosdb-meta"
+    tag: "latest"
+    pullPolicy: Always
+  data:
+    repository: "cnosdb/cnosdb"
+    tag: "latest"
+    pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
+
+resource:
+  meta:
+    memory: { }
+    cpu: { }
+  data:
+    memory: { }
+    cpu: { }
 
 serviceAccount:
   create: true
   name:
-  annotations: {}
+  annotations: { }
 
-livenessProbe: {}
+livenessProbe: { }
   # path: "/ping"
   # initialDelaySeconds: 30
   # timeoutSeconds: 5
-  # scheme: HTTP
+# scheme: HTTP
 
-readinessProbe: {}
+readinessProbe: { }
   # path: "/ping"
   # initialDelaySeconds: 5
   # timeoutSeconds: 1
-  # scheme: HTTP
+# scheme: HTTP
 
-securityContext: {}
+securityContext: { }
   # runAsUser: 999
-  # runAsGroup: 999
+# runAsGroup: 999
 
 startupProbe:
   enabled: false
@@ -64,30 +77,6 @@ persistence:
   size: 8Gi
 
 
-enterprise:
-  enabled: false
-  licensekey: {}
-  clusterSize: 4
-  meta:
-    image:
-      ## This image contains the enterprise meta node package for clustering.
-      ## It is meant to be used in conjunction with the cnosdb:data package of the same version.
-      ## ref: https://hub.docker.com/_/cnosdb
-      tag: meta
-    clusterSize: 3
-    ## seed is hashed and used as `internal-shared-secret` for Meta service.
-    seed: dead-beef-cafe-bae
-    ## Configure resource requests and limits
-    ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
-    resources: {}
-  #  resources:
-  #    requests:
-  #      memory: 512Mi
-  #      cpu: 2
-  #    limits:
-  #      memory: 1Gi
-  #      cpu: 4
-
 ## Set default user
 ##
 setDefaultUser:
@@ -109,7 +98,7 @@ setDefaultUser:
 
 ## Configure resource requests and limits
 ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
-resources: {}
+resources: { }
 #  requests:
 #    memory: 256Mi
 #    cpu: 0.1
@@ -117,11 +106,11 @@ resources: {}
 #    memory: 16Gi
 #    cpu: 8
 
-# Annotations to be added to InfluxDB pods
-podAnnotations: {}
+# Annotations to be added to CNOSDB pods
+podAnnotations: { }
 
-# Labels to be added to InfluxDB pods
-podLabels: {}
+# Labels to be added to CNOSDB pods
+podLabels: { }
 
 ingress:
   enabled: false
@@ -129,9 +118,9 @@ ingress:
   # secretName: my-tls-cert # only needed if tls above is true
   hostname: cnosdb.foobar.com
   className: null
-  annotations: {}
+  annotations: { }
     # kubernetes.io/ingress.class: "nginx"
-    # kubernetes.io/tls-acme: "true"
+  # kubernetes.io/tls-acme: "true"
   path: /
 
 
@@ -146,7 +135,7 @@ ingress:
 #     readOnly: true
 
 ## Additional containers to be added to the pod.
-extraContainers: {}
+extraContainers: { }
 #  - name: my-sidecar
 #    image: nginx:latest
 
@@ -158,55 +147,55 @@ extraContainers: {}
 ## Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
 ##
-nodeSelector: {}
+nodeSelector: { }
 
 ## Affinity for pod assignment
 ## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
 ##
-affinity: {}
+affinity: { }
 
 ## Tolerations for pod assignment
 ## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 ##
-tolerations: []
+tolerations: [ ]
 # - key: "key"
 #   operator: "Equal|Exists"
 #   value: "value"
 #   effect: "NoSchedule|PreferNoSchedule|NoExecute(1.6 only)"
 
-## The InfluxDB image uses several environment variables to automatically
+## The CnosDB image uses several environment variables to automatically
 ## configure certain parts of the server.
 ## Ref: https://hub.docker.com/_/cnosdb/
-env: {}
-  # - name: INFLUXDB_DB
-  #   value: "demo"
+env: { }
+  # - name: CNOSDB
+#   value: "demo"
 
 ## The name of a secret in the same kubernetes namespace which contain values
 ## to be added to the environment.
-## This can be used, for example, to set the INFLUXDB_HTTP_SHARED_SECRET
+## This can be used, for example, to set the CNOSDB_HTTP_SHARED_SECRET
 ## environment variable.
-envFromSecret: {}
+envFromSecret: { }
 
-## InfluxDB configuration
-## ref: https://docs.cnosdata.com/cnosdb/v1.8/administration/config
+## Cnosdb configuration
+## ref: https://cnosdb.github.io/docs/content/cnosdb/latest/managerment/configuration.html
 config:
   reporting_disabled: false
-  rpc: {}
-  meta: {}
-  data: {}
-  coordinator: {}
-  retention: {}
-  shard_precreation: {}
-  monitor: {}
-  http: {}
-  logging: {}
-  subscriber: {}
-  graphite: {}
-  collectd: {}
-  opentsdb: {}
-  udp: {}
-  continuous_queries: {}
-  tls: {}
+  rpc: { }
+  meta: { }
+  data: { }
+  coordinator: { }
+  retention: { }
+  shard_precreation: { }
+  monitor: { }
+  http: { }
+  logging: { }
+  subscriber: { }
+  graphite: { }
+  collectd: { }
+  opentsdb: { }
+  udp: { }
+  continuous_queries: { }
+  tls: { }
 
 # Allow executing custom init scripts
 #
@@ -227,7 +216,7 @@ backup:
       # memory: 512Mi
       # cpu: 2
       ephemeral-storage: "8Gi"
-    # limits:
+      # limits:
       # memory: 1Gi
       # cpu: 4
       # ephemeral-storage: "16Gi"
@@ -246,48 +235,48 @@ backup:
     size: 8Gi
   schedule: "0 0 * * *"
   startingDeadlineSeconds: ""
-  annotations: {}
-  podAnnotations: {}
-  nodeSelector: {}
+  annotations: { }
+  podAnnotations: { }
+  nodeSelector: { }
 
-  ## Google Cloud Storage
-  # gcs:
+    ## Google Cloud Storage
+    # gcs:
     # serviceAccountSecret: cnosdb-backup-key
     # serviceAccountSecretKey: key.json
     # destination: gs://bucket/cnosdb
 
-  ## Azure
-  ## Secret is expected to have connection string stored in `connection-string` field
-  ## Existing container will be used or private one withing storage account will be created.
-  # azure:
+    ## Azure
+    ## Secret is expected to have connection string stored in `connection-string` field
+    ## Existing container will be used or private one withing storage account will be created.
+    # azure:
     # storageAccountSecret: cnosdb-backup-azure-key
     # destination_container: cnosdb-container
     # destination_path: ""
 
-  ## Amazon S3 or compatible
-  ## Secret is expected to have AWS (or compatible) credentials stored in `credentials` field.
-  ## Please look at https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-where
-  ## for the credentials format.
-  ## The bucket should already exist.
-  # s3:
+    ## Amazon S3 or compatible
+    ## Secret is expected to have AWS (or compatible) credentials stored in `credentials` field.
+    ## Please look at https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-where
+    ## for the credentials format.
+    ## The bucket should already exist.
+    # s3:
     # credentialsSecret: aws-credentials-secret
     # destination: s3://bucket/path
     ## Optional. Specify if you're using an alternate S3 endpoint.
-    # endpointUrl: ""
+  # endpointUrl: ""
 
 backupRetention:
   enabled: false
   resources:
     requests:
-      # memory: 512Mi
-      # cpu: 2
+    # memory: 512Mi
+    # cpu: 2
     # limits:
-      # memory: 1Gi
-      # cpu: 4
+    # memory: 1Gi
+    # cpu: 4
   schedule: "0 0 * * *"
   startingDeadlineSeconds:
-  annotations: {}
-  podAnnotations: {}
+  annotations: { }
+  podAnnotations: { }
   daysToRetain: 7
   # s3:
   #   credentialsSecret: aws-credentials-secret

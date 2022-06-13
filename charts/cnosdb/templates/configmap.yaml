@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: {{ include "cnosdb.fullname" . }}
   labels:
-    {{- include "cnosdb.labels" . | nindent 4 }}
+    app.kubernetes.io/component: cnosdb-data
 data:
   cnosdb.conf: |+
     reporting-disabled = {{ .Values.config.reporting_disabled | default false }}
@@ -18,11 +18,6 @@ data:
       {{- else }}
       {{ $key }} = {{ $value }}
       {{- end  }}
-      {{- end }}
-
-      {{- if .Values.enterprise.enabled }}
-      internal-shared-secret = "{{ sha256sum .Values.enterprise.meta.seed }}"
-      meta-auth-enabled = {{ .Values.config.meta.authEnabled }}
       {{- end }}
 
     [data]
@@ -173,12 +168,3 @@ data:
       {{ $key }} = {{ $value }}
       {{- end  }}
       {{- end }}
-
-    {{ if .Values.enterprise.enabled -}}
-    [enterprise]
-      license-key = {{ .Values.enterprise.licensekey | quote }}
-
-    [hinted-handoff]
-      enabled = true
-      dir = "/var/lib/cnosdb/hh"
-    {{- end }}
