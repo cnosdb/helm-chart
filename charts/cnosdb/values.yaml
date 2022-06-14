@@ -25,17 +25,17 @@ serviceAccount:
 livenessProbe: { }
   # path: "/ping"
   # initialDelaySeconds: 30
-  # timeoutSeconds: 5
+# timeoutSeconds: 5
 # scheme: HTTP
 
 readinessProbe: { }
   # path: "/ping"
   # initialDelaySeconds: 5
-  # timeoutSeconds: 1
+# timeoutSeconds: 1
 # scheme: HTTP
 
 securityContext: { }
-  # runAsUser: 999
+# runAsUser: 999
 # runAsGroup: 999
 
 startupProbe:
@@ -119,7 +119,7 @@ ingress:
   hostname: cnosdb.foobar.com
   className: null
   annotations: { }
-    # kubernetes.io/ingress.class: "nginx"
+  # kubernetes.io/ingress.class: "nginx"
   # kubernetes.io/tls-acme: "true"
   path: /
 
@@ -167,7 +167,7 @@ tolerations: [ ]
 ## configure certain parts of the server.
 ## Ref: https://hub.docker.com/_/cnosdb/
 env: { }
-  # - name: CNOSDB
+# - name: CNOSDB
 #   value: "demo"
 
 ## The name of a secret in the same kubernetes namespace which contain values
@@ -261,7 +261,7 @@ backup:
     # s3:
     # credentialsSecret: aws-credentials-secret
     # destination: s3://bucket/path
-    ## Optional. Specify if you're using an alternate S3 endpoint.
+  ## Optional. Specify if you're using an alternate S3 endpoint.
   # endpointUrl: ""
 
 backupRetention:
@@ -278,6 +278,8 @@ backupRetention:
   annotations: { }
   podAnnotations: { }
   daysToRetain: 7
+  # disk :
+  #   targetCatalog: /disk/
   # s3:
   #   credentialsSecret: aws-credentials-secret
   #   bucketName: bucket

@@ -57,7 +57,7 @@ spec:
           serviceAccountName: {{ include "cnosdb.serviceAccountName" . }}
           initContainers:
           - name: cnosdb-backup
-            image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+            image: "{{ .Values.image.data.repository }}:{{ .Values.image.data.tag }}"
             volumeMounts:
             - name: backup
               mountPath: /backup
@@ -66,12 +66,21 @@ spec:
             args:
             - '-c'
             - |
-              influxd backup \
+              cnosdb backup \
                 -host {{ include "cnosdb.fullname" . }}.{{ .Release.Namespace }}.svc:{{ .Values.config.rpc.bind_address | default 8088 }} \
                 -portable /backup/"$(date +%Y%m%d%H%M%S)"
             resources:
               {{- toYaml .Values.backup.resources | nindent 14 }}
           containers:
+          {{- if .Values.backup.disk}}
+            - name: disk
+              command:
+                - /bin/sh
+                - '-c'
+                - '-e'
+                - |
+                  mv /backup/* {{.Values.backup.targetCatalog}}
+          {{- end}}
           {{- if .Values.backup.gcs }}
           - name: gsutil-cp
             image: google/cloud-sdk:alpine
