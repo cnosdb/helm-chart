@@ -3,32 +3,12 @@ entries:
   cnosdb:
   - apiVersion: v2
     appVersion: 1.16.0
-    created: "2022-06-09T03:27:39.891403709Z"
+    created: "2023-09-21T13:39:23.595116731Z"
     description: An Open Source Distributed Time Series Database with high performance, high compression ratio and high usability.
-    digest: 919618e576120b3ff4d566c3173bc69da88f51bb0c1b5848834c9f1691919407
+    digest: f1759986101e207e743813e4c31b66963caf84841444c1dd429f9b90a7f0238d
     name: cnosdb
     type: application
     urls:
-    - https://github.com/cnosdb/helm-chart/releases/download/cnosdb-1.0.1/cnosdb-1.0.1.tgz
-    version: 1.0.1
-  - apiVersion: v2
-    appVersion: 1.0.1
-    created: "2022-06-09T01:56:47.407351912Z"
-    description: A Helm chart for Kubernetes
-    digest: 1735d07bd6563e3fd07a14291ee9dd7e5efff8f3b9f7690afbc97d10ce20db60
-    name: cnosdb
-    type: application
-    urls:
-    - https://github.com/cnosdb/helm-chart/releases/download/cnosdb-0.1.1/cnosdb-0.1.1.tgz
-    version: 0.1.1
-  - apiVersion: v2
-    appVersion: 1.0.1
-    created: "2022-06-08T18:36:05.12030856+08:00"
-    description: A Helm chart for Kubernetes
-    digest: 9f364f2aa7951f657e70c8c93dc12c3dc4e72cd0043e6cb2deea886a5210f993
-    name: cnosdb
-    type: application
-    urls:
-    - https://helloworlde.github.io/helm-chart/chars/cnosdb-0.1.0.tgz
+    - https://github.com/cnosdb/helm-chart/releases/download/cnosdb-0.1.0/cnosdb-0.1.0.tgz
     version: 0.1.0
-generated: "2022-06-08T18:36:05.11976368+08:00"
+generated: "2023-09-21T13:39:23.334034755Z"
