@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cnosdb.fullname" . -}}-meta
+  labels:
+    cnosdb.com/app: cnosdb
+    cnosdb.com/role: meta
+    cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+    {{- include "cnosdb.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: {{ .Values.meta.service.port }}
+      name: meta
+      targetPort: meta
+  clusterIP: None
+  selector:
+    cnosdb.com/app: cnosdb
+    cnosdb.com/role: meta
+    cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}

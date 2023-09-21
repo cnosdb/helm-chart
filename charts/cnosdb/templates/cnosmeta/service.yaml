@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cnosdb.fullname" . -}}-meta-svc
+  labels:
+    cnosdb.com/app: cnosdb
+    cnosdb.com/role: meta
+    cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+    {{- include "cnosdb.labels" . | nindent 4 }}
+  {{- if  .Values.meta.service.annotations }}
+  annotations: {{- include "cnosdb.toYaml" ( dict "value" .Values.meta.service.annotations ) | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.meta.service.type }}
+  {{- if and .Values.meta.service.clusterIP (eq .Values.meta.service.type "ClusterIP") }}
+  clusterIP: {{ .Values.meta.service.clusterIP }}
+  {{- end }}
+  {{- if (or (eq .Values.meta.service.type "LoadBalancer") (eq .Values.meta.service.type "NodePort")) }}
+  externalTrafficPolicy: {{ .Values.meta.service.externalTrafficPolicy | quote }}
+  {{- end }}
+  {{- if eq .Values.meta.service.type "LoadBalancer" }}
+  loadBalancerSourceRanges: {{ .Values.meta.service.loadBalancerSourceRanges }}
+  {{- end }}
+  {{- if (and (eq .Values.meta.service.type "LoadBalancer") (not (empty .Values.meta.service.loadBalancerIP))) }}
+  loadBalancerIP: {{ .Values.meta.service.loadBalancerIP }}
+  {{- end }}
+  ports:
+    - port: {{ .Values.meta.service.port }}
+      name: meta
+      targetPort: meta
+      {{- if and (or (eq .Values.meta.service.type "NodePort") (eq .Values.meta.service.type "LoadBalancer")) .Values.meta.service.nodePort }}
+      nodePort: {{ .Values.meta.service.nodePort }}
+      {{- end }}
+  selector:
+    cnosdb.com/app: cnosdb
+    cnosdb.com/role: meta
+    cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}

@@ -1,0 +1,118 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "cnosdb.fullname" . -}}-tskv
+  labels:
+    cnosdb.com/app: cnosdb
+    cnosdb.com/role: tskv
+    cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+    {{- include "cnosdb.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      cnosdb.com/app: cnosdb
+      cnosdb.com/role: tskv
+      cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+  serviceName: "cnosdb-tskv"
+  podManagementPolicy: Parallel
+  replicas: {{ .Values.tskv.replicaCount }}
+  template:
+    metadata:
+      labels:
+        cnosdb.com/app: cnosdb
+        cnosdb.com/role: tskv
+        cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.tskv.terminationGracePeriodSeconds }}
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tskv.affinity }}
+      affinity: {{- include "cnosdb.toYaml" (dict "value" .Values.tskv.affinity ) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tskv.nodeSelector }}
+      nodeSelector: {{- include "cnosdb.toYaml" (dict "value" .Values.tskv.nodeSelector ) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tskv.tolerations }}
+      tolerations: {{- include "cnosdb.toYaml" (dict "value" .Values.tskv.tolerations ) | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: init-conf
+          image: "{{ .Values.image.clusterConfTool.repository }}:{{ .Values.image.clusterConfTool.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: CNOSDB_ROLE
+              value: tskv
+            - name: NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: META_SVC_NAME
+              value: {{ include "cnosdb.fullname" . -}}-meta
+            - name: META_SVC_PORT
+              value: "{{ .Values.meta.service.port }}"
+            - name: META_STS_NAME
+              value: {{ include "cnosdb.fullname" . -}}-meta
+            - name: META_REPLICAS
+              value: "{{ .Values.meta.replicaCount }}"
+            - name: SVC_NAME
+              value: {{ include "cnosdb.fullname" . -}}-tskv
+            - name: CLUSTER_INSTANCE_NAME
+              value: {{ include "cnosdb.fullname" . }}
+            - name: CONF_FROM_USER
+              value: '{{ .Values.tskv.extraConf | toJson }}'
+          args: ["-type", "conf"]
+          volumeMounts:
+            - name: config-base
+              mountPath: "/etc/initconf"
+            - name: config
+              mountPath: "/etc/cnosdb"
+      containers:
+        - name: cnosdb-tskv
+          image: "{{ .Values.image.cnosdb.repository }}:{{ .Values.image.cnosdb.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/bash
+            - -c
+            - |
+              cnosdb run -M tskv --config /etc/cnosdb/cnosdb.conf
+          ports:
+            - containerPort: 8902
+              name: http
+            - containerPort: 8903
+              name: grpc
+            - containerPort: 8904
+              name: flight
+            - containerPort: 8905
+              name: tcp
+          {{- if .Values.tskv.resources }}
+          resources: {{- toYaml .Values.tskv.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: "/etc/cnosdb"
+            - name: tskv-data
+              mountPath: "/var/lib/cnosdb"
+      volumes:
+        - name: config-base
+          configMap:
+            name: {{ include "cnosdb.fullname" . -}}-config-base
+        - name: config
+          emptyDir: {}
+  {{- if not .Values.tskv.persistence.enabled }}
+        - name: tskv-data
+          emptyDir: {}
+  {{- else }}
+  volumeClaimTemplates:
+    - metadata:
+        name: tskv-data
+      spec:
+        accessModes:
+        {{- range .Values.tskv.persistence.accessModes }}
+          - {{ . | quote }}
+        {{- end }}
+        storageClassName: {{ .Values.tskv.persistence.storageClass }}
+        resources:
+          requests:
+            storage: {{ .Values.tskv.persistence.size | quote }}
+  {{- end }}

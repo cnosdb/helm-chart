@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cnosdb.fullname" . -}}-tskv
+  labels:
+    cnosdb.com/app: cnosdb
+    cnosdb.com/role: tskv
+    cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+    {{- include "cnosdb.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: {{ .Values.tskv.service.ports.http }}
+      targetPort: http
+      name: http
+    - port: {{ .Values.tskv.service.ports.grpc }}
+      targetPort: grpc
+      name: grpc
+    - port: {{ .Values.tskv.service.ports.flight }}
+      targetPort: flight
+      name: flight
+    - port: {{ .Values.tskv.service.ports.tcp }}
+      targetPort: tcp
+      name: tcp
+  clusterIP: None
+  selector:
+    cnosdb.com/app: cnosdb
+    cnosdb.com/role: tskv
+    cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}

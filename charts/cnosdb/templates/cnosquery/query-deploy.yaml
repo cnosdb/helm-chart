@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cnosdb.fullname" . -}}-query
+  labels:
+    cnosdb.com/app: cnosdb
+    cnosdb.com/role: query
+    cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+    {{- include "cnosdb.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      cnosdb.com/app: cnosdb
+      cnosdb.com/role: query
+      cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+  replicas: {{ .Values.query.replicaCount }}
+  template:
+    metadata:
+      labels:
+        cnosdb.com/app: cnosdb
+        cnosdb.com/role: query
+        cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+    spec:
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.query.affinity }}
+      affinity: {{- include "cnosdb.toYaml" (dict "value" .Values.query.affinity ) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.query.nodeSelector }}
+      nodeSelector: {{- include "cnosdb.toYaml" (dict "value" .Values.query.nodeSelector ) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.query.tolerations }}
+      tolerations: {{- include "cnosdb.toYaml" (dict "value" .Values.query.tolerations ) | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: init-conf
+          image: "{{ .Values.image.clusterConfTool.repository }}:{{ .Values.image.clusterConfTool.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: CNOSDB_ROLE
+              value: query
+            - name: NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: META_SVC_NAME
+              value: {{ include "cnosdb.fullname" . -}}-meta
+            - name: META_SVC_PORT
+              value: "{{ .Values.meta.service.port }}"
+            - name: META_STS_NAME
+              value: {{ include "cnosdb.fullname" . -}}-meta
+            - name: META_REPLICAS
+              value: "{{ .Values.meta.replicaCount }}"
+            - name: SVC_NAME
+              value: {{ include "cnosdb.fullname" . -}}-query
+            - name: CLUSTER_INSTANCE_NAME
+              value: {{ include "cnosdb.fullname" . }}
+            - name: CONF_FROM_USER
+              value: '{{ .Values.query.extraConf | toJson }}'
+          args: ["-type", "conf"]
+          volumeMounts:
+            - name: config-base
+              mountPath: "/etc/initconf"
+            - name: config
+              mountPath: "/etc/cnosdb"
+      containers:
+        - name: cnosdb-query
+          image: "{{ .Values.image.cnosdb.repository }}:{{ .Values.image.cnosdb.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/bash
+            - -c
+            - |
+              cnosdb run -M query --config /etc/cnosdb/cnosdb.conf
+          ports:
+            - containerPort: 8902
+              name: http
+            - containerPort: 8904
+              name: flight
+          {{- if .Values.query.resources }}
+          resources: {{- toYaml .Values.query.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: "/etc/cnosdb"
+      volumes:
+        - name: config-base
+          configMap:
+            name: {{ include "cnosdb.fullname" . -}}-config-base
+        - name: config
+          emptyDir: {}

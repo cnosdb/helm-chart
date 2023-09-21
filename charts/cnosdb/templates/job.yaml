@@ -1,0 +1,39 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "cnosdb.fullname" . -}}-completion
+  labels:
+    cnosdb.com/app: cnosdb
+    cnosdb.com/role: completion
+    cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+    {{- include "cnosdb.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade,post-rollback
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: completion
+          image: "{{ .Values.image.clusterConfTool.repository }}:{{ .Values.image.clusterConfTool.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: UPGRADE
+              value: {{ if .Release.IsUpgrade }}"true"{{ else }}"false"{{ end }}
+            - name: NAMESPACE
+              value: "{{ .Release.Namespace }}"
+            - name: META_SVC_NAME
+              value: {{ include "cnosdb.fullname" . -}}-meta
+            - name: META_SVC_PORT
+              value: "{{ .Values.meta.service.port }}"
+            - name: META_STS_NAME
+              value: {{ include "cnosdb.fullname" . -}}-meta
+            - name: META_REPLICAS
+              value: "{{ .Values.meta.replicaCount }}"
+          args: ["-type", "completion"]
+      restartPolicy: Never

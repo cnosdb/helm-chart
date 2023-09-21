@@ -1,1 +1,4 @@
 /.idea
+/initconfig/initconfig
+/initconfig/*.tgz
+/dist

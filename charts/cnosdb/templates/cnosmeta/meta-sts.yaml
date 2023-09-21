@@ -1,0 +1,104 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "cnosdb.fullname" . -}}-meta
+  labels:
+    cnosdb.com/app: cnosdb
+    cnosdb.com/role: meta
+    cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+    {{- include "cnosdb.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      cnosdb.com/app: cnosdb
+      cnosdb.com/role: meta
+      cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+  serviceName: "{{ include "cnosdb.fullname" . -}}-meta"
+  podManagementPolicy: Parallel
+  replicas: {{ .Values.meta.replicaCount }}
+  template:
+    metadata:
+      labels:
+        cnosdb.com/app: cnosdb
+        cnosdb.com/role: meta
+        cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+    spec:
+      terminationGracePeriodSeconds: {{ .Values.meta.terminationGracePeriodSeconds }}
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.meta.affinity }}
+      affinity: {{- include "cnosdb.toYaml" (dict "value" .Values.meta.affinity) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.meta.nodeSelector }}
+      nodeSelector: {{- include "cnosdb.toYaml" (dict "value" .Values.meta.nodeSelector) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.meta.tolerations }}
+      tolerations: {{- include "cnosdb.toYaml" (dict "value" .Values.meta.tolerations) | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: init-conf
+          image: "{{ .Values.image.clusterConfTool.repository }}:{{ .Values.image.clusterConfTool.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: CNOSDB_ROLE
+              value: meta
+            - name: NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: META_SVC_NAME
+              value: {{ include "cnosdb.fullname" . -}}-meta
+            - name: CLUSTER_INSTANCE_NAME
+              value: {{ include "cnosdb.fullname" . }}
+            - name: CONF_FROM_USER
+              value: '{{ .Values.meta.extraConf | toJson }}'
+          args: ["-type", "conf"]
+          volumeMounts:
+            - name: config-base
+              mountPath: "/etc/initconf"
+            - name: config
+              mountPath: "/etc/cnosdb"
+      containers:
+        - name: cnosdb-meta
+          image: "{{ .Values.image.cnosdb.repository }}:{{ .Values.image.cnosdb.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/bash
+            - -c
+            - |
+              cnosdb-meta --config /etc/cnosdb/cnosdb.conf
+          ports:
+            - containerPort: 8901
+              name: meta
+          {{- if .Values.meta.resources }}
+          resources: {{- toYaml .Values.meta.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: "/etc/cnosdb"
+            - name: meta-data
+              mountPath: "/var/lib/cnosdb"
+      volumes:
+        - name: config-base
+          configMap:
+            name: {{ include "cnosdb.fullname" . -}}-config-base
+        - name: config
+          emptyDir: {}
+  {{- if not .Values.meta.persistence.enabled }}
+        - name: meta-data
+          emptyDir: {}
+  {{- else }}
+  volumeClaimTemplates:
+    - metadata:
+        name: meta-data
+      spec:
+        accessModes:
+        {{- range .Values.meta.persistence.accessModes }}
+          - {{ . | quote }}
+        {{- end }}
+        storageClassName: {{ .Values.meta.persistence.storageClass }}
+        resources:
+          requests:
+            storage: {{ .Values.meta.persistence.size | quote }}
+  {{- end }}
