@@ -5,9 +5,9 @@ image:
     repository: cnosdb/cnosdb
     tag: community-latest
   clusterConfTool:
-    repository: cnosdb/init-config
+    repository: wyxok/cnosdb-init-config
     tag: latest
-  pullPolicy: Never
+  pullPolicy: IfNotPresent
   pullSecrets: []
 
 # Allowed values: `singleton` or `cluster` 优先实现cluster， singleton先不实现
