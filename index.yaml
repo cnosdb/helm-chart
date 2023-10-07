@@ -9,6 +9,6 @@ entries:
     name: cnosdb
     type: application
     urls:
-    - https://github.com/cnosdb/helm-chart/releases/download/cnosdb-0.1.0/cnosdb-0.1.0.tgz
+    - https://github.com/wyx0k/wyx0k.github.io/releases/download/cnosdb-0.1.0/cnosdb-0.1.0.tgz
     version: 0.1.0
 generated: "2023-09-21T13:39:23.334034755Z"
