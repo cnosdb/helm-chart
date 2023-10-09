@@ -161,7 +161,7 @@ helm install --set meta.persistence.existingClaim=PVC_NAME my-cnosdb cnosdb/cnos
 ```
 
 ### Extra Configuration
-A toml configuration can be expressed by inline expression, `demo.test.foo=bar` is equal to this:
+A toml configuration can be expressed by inline expression, `demo.foo=bar` is equal to this:
 ```toml
 # demo.foo=bar
 [demo]

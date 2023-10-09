@@ -159,7 +159,7 @@ helm install --set meta.persistence.existingClaim=PVC_NAME my-cnosdb cnosdb/cnos
 ```
 
 ### 额外配置
-toml 配置可以通过一行表达式表示, `demo.test.foo=bar` 和下面是相等的
+toml 配置可以通过一行表达式表示, `demo.foo=bar` 和下面是相等的
 ```toml
 # demo.foo=bar
 [demo]
