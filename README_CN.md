@@ -163,7 +163,7 @@ toml 配置可以通过一行表达式表示, `demo.test.foo=bar` 和下面是�
 ```toml
 # demo.foo=bar
 [demo]
-foo=bar
+foo = bar
 ```
 可以通过设置extraConf的值来覆盖默认配置:
 ```sh

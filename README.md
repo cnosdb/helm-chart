@@ -53,6 +53,7 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | image.pullPolicy                 | Image pull policy                    | IfNotPresent             |
 | image.pullSecrets                | Image pull secrets                   | []                       |
 
+
 ### Common Parameters
 
 | Name             | Description                                        | Value   |
@@ -164,7 +165,7 @@ A toml configuration can be expressed by inline expression, `demo.test.foo=bar` 
 ```toml
 # demo.foo=bar
 [demo]
-foo=bar
+foo = bar
 ```
 Overwrite the default settings for any replicas:
 ```sh
