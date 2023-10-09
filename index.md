@@ -1,6 +1,7 @@
 # CnosDB
 CnosDB is a high-performance, high-compression, and easy-to-use open-source distributed time-series database. It is primarily used in fields such as IoT, industrial internet, connected cars, and IT operations. All of the code is open-sourced and available on GitHub.
 
+English | [简体中文](./README_CN.md)
 ## tl;dr
 ```sh
 helm repo add cnosdb https://cnosdb.github.io/helm-chart/
@@ -51,6 +52,7 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | image.clusterConfTool.tag        | Cnosdb cluster tool image tag        | latest                   |
 | image.pullPolicy                 | Image pull policy                    | IfNotPresent             |
 | image.pullSecrets                | Image pull secrets                   | []                       |
+
 
 ### Common Parameters
 
@@ -163,7 +165,7 @@ A toml configuration can be expressed by inline expression, `demo.test.foo=bar` 
 ```toml
 # demo.foo=bar
 [demo]
-foo=bar
+foo = bar
 ```
 Overwrite the default settings for any replicas:
 ```sh
