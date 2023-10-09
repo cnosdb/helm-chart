@@ -1,7 +1,6 @@
 # CnosDB
 CnosDB is a high-performance, high-compression, and easy-to-use open-source distributed time-series database. It is primarily used in fields such as IoT, industrial internet, connected cars, and IT operations. All of the code is open-sourced and available on GitHub.
 
-English | [简体中文](./README_CN.md)
 ## tl;dr
 ```sh
 helm repo add cnosdb https://cnosdb.github.io/helm-chart/
@@ -44,6 +43,7 @@ Alternatively, a YAML file that specifies the values for the parameters can be p
 helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 ```
 ### Image Parameters
+
 | Name                             | Description                          | Value                    |
 | -------------------------------- | ------------------------------------ | ------------------------ |
 | image.cnosdb.repository          | Cnosdb image repository              | cnosdb/cnosdb            |
