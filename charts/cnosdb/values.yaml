@@ -13,11 +13,10 @@ image:
 # Allowed values: `singleton` or `cluster` 优先实现cluster， singleton先不实现
 architecture: cluster
 meta:
-  replicaCount: 2
+  replicaCount: 3
   terminationGracePeriodSeconds: 10
   # 这里可以自定义配置去覆盖默认配置
-  extraConf:
-    demo.config: test
+  extraConf: {}
   resources:
     limits: {}
     requests: {}
@@ -38,7 +37,7 @@ meta:
     storageClass: ""
     accessModes:
       - ReadWriteOnce
-    size: 500Mi
+    size: 1Gi
     existingClaim: ""
 tskv:
   replicaCount: 2
@@ -72,7 +71,7 @@ tskv:
     storageClass: ""
     accessModes:
       - ReadWriteOnce
-    size: 500Mi
+    size: 1Gi
     existingClaim: ""
 query:
   replicaCount: 2
