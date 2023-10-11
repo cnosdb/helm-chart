@@ -6,7 +6,7 @@ CnosDB 是一款高性能、高压缩率、高易用性的开源分布式时序�
 ## 快速体验
 ```sh
 helm repo add cnosdb https://cnosdb.github.io/helm-chart/
-helm repo update
+helm repo update cnosdb
 helm install my-cnosdb cnosdb/cnosdb
 ```
 ## 介绍
@@ -44,6 +44,7 @@ cnosdb/cnosdb -ncnosdb
 helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 ```
 ### 镜像参数
+
 | Name                             | Description               | Value                    |
 | -------------------------------- | ------------------------- | ------------------------ |
 | image.cnosdb.repository          | Cnosdb 镜像仓库           | cnosdb/cnosdb            |
@@ -171,4 +172,37 @@ helm install \
 --set meta.extraConf.'storage\.maxsummary_size'='64M' \
 --set tskv.extraConf.'storage\.max_level'=1 \
 my-cnosdb cnosdb/cnosdb
+```
+
+
+### 升级Chart的实例
+
+只更新镜像的版本
+
+```sh
+helm upgrade my-cnosdb cnosdb/cnosdb -ncnosdb --reuse-values --set image.cnosdb.tag=new.version
+```
+
+执行水平扩容
+
+```sh
+helm upgrade my-cnosdb cnosdb/cnosdb -ncnosdb --reuse-values --set meta.replicaCount=3 --set tskv.replicaCount=5 
+```
+
+如果集群支持动态 [扩展 PVC](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#expanding-persistent-volumes-claims), 你可以对存储进行垂直扩容(不借助helm). 但是目前helm做不到, 因为helm无法处理statefulset的验证错误, 而目前statefulset不支持修改vct中的pvc的大小. 所以你只能对 `resources` 例如 `cpu` 和 `memory`进行垂直扩容.
+
+```sh
+helm upgrade my-cnosdb cnosdb/cnosdb -ncnosdb --reuse-values --set tskv.resources.limits.cpu=1
+```
+
+Chart会在本地缓存一份, 如果你想更新Chart(不是应用)的版本, 你应该从远程仓库同步一下Chart的信息.
+
+```sh
+helm repo update cnosdb
+```
+
+然后就可以根据需要进行升级
+
+```sh
+helm upgrade my-cnosdb cnosdb/cnosdb -ncnosdb --set foo=bar
 ```

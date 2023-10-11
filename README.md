@@ -2,10 +2,10 @@
 CnosDB is a high-performance, high-compression, and easy-to-use open-source distributed time-series database. It is primarily used in fields such as IoT, industrial internet, connected cars, and IT operations. All of the code is open-sourced and available on GitHub.
 
 English | [简体中文](./README_CN.md)
-## tl;dr
+## TL;DR
 ```sh
 helm repo add cnosdb https://cnosdb.github.io/helm-chart/
-helm repo update
+helm repo update cnosdb
 helm install my-cnosdb cnosdb/cnosdb
 ```
 
@@ -44,6 +44,7 @@ Alternatively, a YAML file that specifies the values for the parameters can be p
 helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 ```
 ### Image Parameters
+
 | Name                             | Description                          | Value                    |
 | -------------------------------- | ------------------------------------ | ------------------------ |
 | image.cnosdb.repository          | Cnosdb image repository              | cnosdb/cnosdb            |
@@ -173,4 +174,35 @@ helm install \
 --set meta.extraConf.'storage\.maxsummary_size'='64M' \
 --set tskv.extraConf.'storage\.max_level'=1 \
 my-cnosdb cnosdb/cnosdb
+```
+
+### Upgrade the chart release
+
+Upgrade Cnosdb version only.
+
+```sh
+helm upgrade my-cnosdb cnosdb/cnosdb -ncnosdb --reuse-values --set image.cnosdb.tag=new.version
+```
+
+Perform a horizontal scale.
+
+```sh
+helm upgrade my-cnosdb cnosdb/cnosdb -ncnosdb --reuse-values --set meta.replicaCount=3 --set tskv.replicaCount=5 
+```
+
+If the underlying infrastructure supports dynamically [expand PVC](https://kubernetes.io/docs/concepts/storage/persistent-volumes/#expanding-persistent-volumes-claims), you could perform a `vertical scale` for storage. However helm cannot do that, because helm cannot deal with statefulset's validation error, and statefulset cannot change pvc size right now. So you can only perform `vertical scale` for `resources` such as `cpu` and `memory`.
+
+```sh
+helm upgrade my-cnosdb cnosdb/cnosdb -ncnosdb --reuse-values --set tskv.resources.limits.cpu=1
+```
+
+Chart Information is cached locally, if you wanna upgrade chart(not app) version, you should update information of available charts locally from chart repositories.
+
+```sh
+helm repo update cnosdb
+```
+Then upgrade the chart as needed
+
+```sh
+helm upgrade my-cnosdb cnosdb/cnosdb -ncnosdb --set foo=bar
 ```
