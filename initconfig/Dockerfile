@@ -1,6 +1,7 @@
-FROM ubuntu:jammy
+FROM --platform=$TARGETPLATFORM ubuntu:jammy
 WORKDIR /app
-COPY initconfig /app/initconfig
+ARG TARGETARCH
+COPY initconfig_${TARGETARCH} /app/initconfig
 RUN chmod +x /app/initconfig
 ENTRYPOINT ["/app/initconfig"]
 

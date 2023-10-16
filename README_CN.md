@@ -45,7 +45,7 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 ```
 ### 镜像参数
 
-| Name                             | Description               | Value                    |
+| 名称                             | 描述                      | 默认值                   |
 | -------------------------------- | ------------------------- | ------------------------ |
 | image.cnosdbMeta.repository      | Cnosdb meta 镜像仓库      | cnosdb/cnosdb-meta       |
 | image.cnosdbMeta.tag             | Cnosdb meta 镜像tag       | community-latest         |
