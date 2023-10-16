@@ -118,19 +118,16 @@ func generateConf() {
 	if !pass {
 		exitErr(errors.New(fmt.Sprintf("[%s]The necessary environment variables are missing: %s", role, msg)))
 	}
-	baseConfPath := ""
-	if role == META {
-		baseConfPath = "/etc/initconf/meta.conf"
-	} else {
-		baseConfPath = "/etc/initconf/other.conf"
-	}
+	baseConfPath := "/etc/initconf/default.conf"
 	conf, err := toml.LoadFile(baseConfPath)
 	exitErr(err)
-	if _, err = os.Lstat("/etc/cnosdb"); os.IsNotExist(err) {
-		err = os.Mkdir("/etc/cnosdb", os.ModePerm)
-		exitErr(err)
+	targetConfPath := ""
+	if role == META {
+		targetConfPath = "/etc/initconf/cnosdb-meta.conf"
+	} else {
+		targetConfPath = "/etc/initconf/cnosdb.conf"
 	}
-	f, err := os.Create("/etc/cnosdb/cnosdb.conf")
+	f, err := os.Create(targetConfPath)
 	exitErr(err)
 	defer f.Close()
 	var metaAddr string
@@ -285,18 +282,26 @@ func doCheckEnv(envs []string) (string, bool) {
 
 func waitingMeta(metaAddr string) {
 	client := resty.New()
+	checkJsonPath := "membership_config.membership.configs"
 	url := fmt.Sprintf("http://%s/metrics", metaAddr)
 	resp, reqErr := client.R().Get(url)
+	if reqErr == nil {
+		configs := gjson.Get(resp.String(), checkJsonPath)
+		if !configs.Exists() || len(configs.Array()) == 0 {
+			reqErr = clusterNotReadyErr
+		}
+	}
 	for reqErr != nil {
+		fmt.Printf("meta not ready: %s\n", reqErr.Error())
 		fmt.Println("waiting meta for 10s....")
 		time.Sleep(10 * time.Second)
+		fmt.Printf("check meta: %s\n", url)
 		resp, reqErr = client.R().Get(url)
 		if reqErr == nil {
-			voterIds := gjson.Get(resp.String(), "Ok.membership_config.voter_ids")
-			if voterIds.Exists() {
-				if len(voterIds.Array()) > 0 {
-					continue
-				}
+			fmt.Println(resp.String())
+			configs := gjson.Get(resp.String(), checkJsonPath)
+			if configs.Exists() && len(configs.Array()) > 0 {
+				continue
 			}
 			reqErr = clusterNotReadyErr
 		}

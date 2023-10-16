@@ -47,6 +47,8 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 
 | Name                             | Description               | Value                    |
 | -------------------------------- | ------------------------- | ------------------------ |
+| image.cnosdbMeta.repository      | Cnosdb meta 镜像仓库      | cnosdb/cnosdb-meta       |
+| image.cnosdbMeta.tag             | Cnosdb meta 镜像tag       | community-latest         |
 | image.cnosdb.repository          | Cnosdb 镜像仓库           | cnosdb/cnosdb            |
 | image.cnosdb.tag                 | Cnosdb 镜像tag            | community-latest         |
 | image.clusterConfTool.repository | Cnosdb 集群工具的镜像仓库 | wyxok/cnosdb-init-config |

@@ -1,6 +1,9 @@
 nameOverride: ""
 fullnameOverride: ""
 image:
+  cnosdbMeta:
+    repository: cnosdb/cnosdb-meta
+    tag: community-latest
   cnosdb:
     repository: cnosdb/cnosdb
     tag: community-latest

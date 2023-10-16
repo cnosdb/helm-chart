@@ -39,6 +39,13 @@ spec:
       tolerations: {{- include "cnosdb.toYaml" (dict "value" .Values.tskv.tolerations ) | nindent 8 }}
       {{- end }}
       initContainers:
+        - name: fetch-conf
+          image: "{{ .Values.image.cnosdb.repository }}:{{ .Values.image.cnosdb.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["cp","/etc/cnosdb/cnosdb.conf","/etc/initconf/default.conf"]
+          volumeMounts:
+            - name: config
+              mountPath: "/etc/initconf"
         - name: init-conf
           image: "{{ .Values.image.clusterConfTool.repository }}:{{ .Values.image.clusterConfTool.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -63,10 +70,8 @@ spec:
               value: '{{ .Values.tskv.extraConf | toJson }}'
           args: ["-type", "conf"]
           volumeMounts:
-            - name: config-base
-              mountPath: "/etc/initconf"
             - name: config
-              mountPath: "/etc/cnosdb"
+              mountPath: "/etc/initconf"
       containers:
         - name: cnosdb-tskv
           image: "{{ .Values.image.cnosdb.repository }}:{{ .Values.image.cnosdb.tag | default .Chart.AppVersion }}"
@@ -94,9 +99,6 @@ spec:
             - name: tskv-data
               mountPath: "/var/lib/cnosdb"
       volumes:
-        - name: config-base
-          configMap:
-            name: {{ include "cnosdb.fullname" . -}}-config-base
         - name: config
           emptyDir: {}
   {{- if not .Values.tskv.persistence.enabled }}

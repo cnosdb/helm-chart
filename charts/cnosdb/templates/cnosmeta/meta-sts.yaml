@@ -39,6 +39,13 @@ spec:
       tolerations: {{- include "cnosdb.toYaml" (dict "value" .Values.meta.tolerations) | nindent 8 }}
       {{- end }}
       initContainers:
+        - name: fetch-conf
+          image: "{{ .Values.image.cnosdbMeta.repository }}:{{ .Values.image.cnosdbMeta.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["cp","/etc/cnosdb/cnosdb-meta.conf","/etc/initconf/default.conf"]
+          volumeMounts:
+            - name: config
+              mountPath: "/etc/initconf"
         - name: init-conf
           image: "{{ .Values.image.clusterConfTool.repository }}:{{ .Values.image.clusterConfTool.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
@@ -55,19 +62,17 @@ spec:
               value: '{{ .Values.meta.extraConf | toJson }}'
           args: ["-type", "conf"]
           volumeMounts:
-            - name: config-base
-              mountPath: "/etc/initconf"
             - name: config
-              mountPath: "/etc/cnosdb"
+              mountPath: "/etc/initconf"
       containers:
         - name: cnosdb-meta
-          image: "{{ .Values.image.cnosdb.repository }}:{{ .Values.image.cnosdb.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.cnosdbMeta.repository }}:{{ .Values.image.cnosdbMeta.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             - /bin/bash
             - -c
             - |
-              cnosdb-meta --config /etc/cnosdb/cnosdb.conf
+              cnosdb-meta --config /etc/cnosdb/cnosdb-meta.conf
           ports:
             - containerPort: 8901
               name: meta
@@ -80,9 +85,6 @@ spec:
             - name: meta-data
               mountPath: "/var/lib/cnosdb"
       volumes:
-        - name: config-base
-          configMap:
-            name: {{ include "cnosdb.fullname" . -}}-config-base
         - name: config
           emptyDir: {}
   {{- if not .Values.meta.persistence.enabled }}
