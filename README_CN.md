@@ -58,11 +58,11 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 
 ### 通用参数
 
-| 名称             | 描述                                                 | 默认值  |
-| ---------------- | ---------------------------------------------------- | ------- |
-| nameOverride     | 部分覆盖 common.names.fullname的字符串               | ""      |
-| fullnameOverride | 完全覆盖 common.names.fullname的字符串               | ""      |
-| architecture     | 安装的架构,可选的值: separation, bundle 或 singleton | cluster |
+| 名称             | 描述                                                 | 默认值     |
+| ---------------- | ---------------------------------------------------- | ---------- |
+| nameOverride     | 部分覆盖 common.names.fullname的字符串               | ""         |
+| fullnameOverride | 完全覆盖 common.names.fullname的字符串               | ""         |
+| architecture     | 安装的架构,可选的值: separation, bundle 或 singleton | separation |
 
 ### Meta参数
 **当架构是`separation`或`bundle`时生效**
