@@ -1,4 +1,4 @@
----
+{{- if or (eq .Values.architecture "separation") (eq .Values.architecture "bundle") }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -104,3 +104,4 @@ spec:
           requests:
             storage: {{ .Values.meta.persistence.size | quote }}
   {{- end }}
+{{- end }}

@@ -1,3 +1,4 @@
+{{- if or (eq .Values.architecture "separation") (eq .Values.architecture "bundle") }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -35,3 +36,4 @@ spec:
     cnosdb.com/app: cnosdb
     cnosdb.com/role: meta
     cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+{{- end }}

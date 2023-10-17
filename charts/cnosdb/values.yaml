@@ -13,8 +13,8 @@ image:
   pullPolicy: IfNotPresent
   pullSecrets: []
 
-# Allowed values: `singleton` or `cluster` 优先实现cluster， singleton先不实现
-architecture: cluster
+# Allowed values: `singleton` `bundle` or `separation`
+architecture: separation
 meta:
   replicaCount: 3
   terminationGracePeriodSeconds: 10
@@ -106,10 +106,7 @@ query:
     annotations: {}
     loadBalancerIP: ""
     loadBalancerSourceRanges: []
-##todo##
-## If queryTskv is enable, query and tskv would be disabled
 queryTskv:
-  enbale: false
   replicaCount: 2
   terminationGracePeriodSeconds: 10
   extraConf: {}
@@ -126,11 +123,13 @@ queryTskv:
       grpc: 8903
       flight: 8904
       tcp: 8905
+      vector: 8906
     nodePorts:
       http: ""
       grpc: ""
       flight: ""
       tcp: ""
+      vector: ""
     clusterIP: ""
     externalTrafficPolicy: Cluster
     annotations: {}
@@ -141,5 +140,5 @@ queryTskv:
     storageClass: ""
     accessModes:
       - ReadWriteOnce
-    size: 500Mi
+    size: 1Gi
     existingClaim: ""

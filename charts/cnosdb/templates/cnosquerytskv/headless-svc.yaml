@@ -1,11 +1,11 @@
-{{- if eq .Values.architecture "separation" }}
+{{- if eq .Values.architecture "bundle" }}
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "cnosdb.fullname" . -}}-tskv
+  name: {{ include "cnosdb.fullname" . -}}-querytskv
   labels:
     cnosdb.com/app: cnosdb
-    cnosdb.com/role: tskv
+    cnosdb.com/role: query_tskv
     cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
     {{- include "cnosdb.labels" . | nindent 4 }}
 spec:
@@ -23,6 +23,6 @@ spec:
   clusterIP: None
   selector:
     cnosdb.com/app: cnosdb
-    cnosdb.com/role: tskv
+    cnosdb.com/role: query_tskv
     cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
 {{- end }}

@@ -1,3 +1,4 @@
+{{- if eq .Values.architecture "separation" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -97,3 +98,4 @@ spec:
       volumes:
         - name: config
           emptyDir: {}
+{{- end }}

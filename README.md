@@ -59,13 +59,14 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 
 ### Common Parameters
 
-| Name             | Description                                        | Value   |
-| ---------------- | -------------------------------------------------- | ------- |
-| nameOverride     | String to partially override common.names.fullname | ""      |
-| fullnameOverride | String to fully override common.names.fullname     | ""      |
-| architecture     | The architecture of installing                     | cluster |
+| Name             | Description                                                                     | Value   |
+| ---------------- | ------------------------------------------------------------------------------- | ------- |
+| nameOverride     | String to partially override common.names.fullname                              | ""      |
+| fullnameOverride | String to fully override common.names.fullname                                  | ""      |
+| architecture     | The architecture of installing. Allowed values: separation, bundle or singleton | cluster |
 
 ### Meta Parameters
+**Active when architecture is `separation` or `bundle`**
 
 | Name                                  | Description                                                                     | Value             |
 | ------------------------------------- | ------------------------------------------------------------------------------- | ----------------- |
@@ -89,9 +90,9 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | meta.persistence.storageClass         | Persistent Volume storage class                                                 | ""                |
 | meta.persistence.accessModes          | Persistent Volume access modes                                                  | ["ReadWriteOnce"] |
 | meta.persistence.size                 | Persistent Volume size                                                          | 1Gi               |
-| meta.persistence.existingClaim        | Use a existing PVC which must be created manually before bound                  | ""                |
 
 ### Tskv Parameters
+**Active when architecture is `separation`**
 
 | Name                                  | Description                                                                     | Value             |
 | ------------------------------------- | ------------------------------------------------------------------------------- | ----------------- |
@@ -123,9 +124,9 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | tskv.persistence.storageClass         | Persistent Volume storage class                                                 | ""                |
 | tskv.persistence.accessModes          | Persistent Volume access modes                                                  | ["ReadWriteOnce"] |
 | tskv.persistence.size                 | Persistent Volume size                                                          | 1Gi               |
-| tskv.persistence.existingClaim        | Use a existing PVC which must be created manually before bound                  | ""                |
 
 ### Query Parameters
+**Active when architecture is `separation`**
 
 | Name                                   | Description                                                      | Value     |
 | -------------------------------------- | ---------------------------------------------------------------- | --------- |
@@ -153,23 +154,46 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | query.service.loadBalancerIP           | Cnosdb query replicas service Load Balancer IP                   | ""        |
 | query.service.loadBalancerSourceRanges | Cnosdb query replicas service Load Balancer sources              | []        |
 
+### QueryTskv Parameters
+**Active when architecture is `bundle`**
+
+| Name                                       | Description                                                                           | Value             |
+| ------------------------------------------ | ------------------------------------------------------------------------------------- | ----------------- |
+| queryTskv.replicaCount                     | Number of Cnosdb query_tskv replicas to deploy                                        | 2                 |
+| queryTskv.terminationGracePeriodSeconds    | Integer setting the termination grace period for the Cnosdb query_tskv-replicas pods  | 10                |
+| queryTskv.extraConf                        | Configuration for Cnosdb query_tskv replicas nodes                                    | {}                |
+| queryTskv.resources.limits                 | The resources limits for the Cnosdb query_tskv replicas containers                    | {}                |
+| queryTskv.resources.requests               | The requested resources for the Cnosdb query_tskv replicas containers                 | {}                |
+| queryTskv.affinity                         | Affinity for Cnosdb query_tskv replicas pods assignment                               | {}                |
+| queryTskv.nodeSelector                     | Node labels for Cnosdb query_tskv replicas pods assignment                            | {}                |
+| queryTskv.tolerations                      | Tolerations for Cnosdb query_tskv replicas pods assignment                            | []                |
+| queryTskv.service.type                     | Cnosdb query_tskv replicas service type                                               | ClusterIP         |
+| queryTskv.service.ports.http               | Cnosdb query_tskv replicas service http port                                          | 8902              |
+| queryTskv.service.ports.grpc               | Cnosdb query_tskv replicas service grpc port                                          | 8903              |
+| queryTskv.service.ports.flight             | Cnosdb query_tskv replicas service flight port                                        | 8904              |
+| queryTskv.service.ports.tcp                | Cnosdb query_tskv replicas service tcp port                                           | 8905              |
+| queryTskv.service.ports.vector             | Cnosdb query_tskv replicas service vector port                                        | 8906              |
+| queryTskv.service.nodePorts.http           | http Node port for Cnosdb query_tskv replicas                                         | ""                |
+| queryTskv.service.nodePorts.grpc           | grpc Node port for Cnosdb query_tskv replicas                                         | ""                |
+| queryTskv.service.nodePorts.flight         | flight Node port for Cnosdb query_tskv replicas                                       | ""                |
+| queryTskv.service.nodePorts.tcp            | tcp Node port for Cnosdb query_tskv replicas                                          | ""                |
+| queryTskv.service.nodePorts.vector         | vector Node port for Cnosdb query_tskv replicas                                       | ""                |
+| queryTskv.service.clusterIP                | Cnosdb query_tskv replicas service Cluster IP                                         | ""                |
+| queryTskv.service.externalTrafficPolicy    | Cnosdb query_tskv replicas service external traffic policy                            | Cluster           |
+| queryTskv.service.annotations              | Additional custom annotations for Cnosdb query_tskv replicas service                  | {}                |
+| queryTskv.service.loadBalancerIP           | Cnosdb query_tskv replicas service Load Balancer IP                                   | ""                |
+| queryTskv.service.loadBalancerSourceRanges | Cnosdb query_tskv replicas service Load Balancer sources                              | []                |
+| queryTskv.persistence.enabled              | Enable persistence on Cnosdb query_tskv replicas nodes using Persistent Volume Claims | false             |
+| queryTskv.persistence.storageClass         | Persistent Volume storage class                                                       | ""                |
+| queryTskv.persistence.accessModes          | Persistent Volume access modes                                                        | ["ReadWriteOnce"] |
+| queryTskv.persistence.size                 | Persistent Volume size                                                                | 1Gi               |
 
 ## Tips
-PV will not be removed when delete a cnosdb helm release
+`PV` will not be removed when delete a cnosdb helm release unless delete `PVC` manully.
 
 ### Persistence
 
-The chart mounts a [Persistent Volume](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) volume at the `/var/lib/cnosdb` path. The volume is created using dynamic volume provisioning, by default. 
-An existing PersistentVolumeClaim can be defined. If a Persistent Volume Claim already exists, specify it during installation.
-
-### Existing PersistentVolumeClaims
-
-1. Create the PersistentVolume
-1. Create the PersistentVolumeClaim
-1. Install the chart
-```sh
-helm install --set meta.persistence.existingClaim=PVC_NAME my-cnosdb cnosdb/cnosdb
-```
+If you have enabled persistence by specifying `[queryTskv | tskv | meta].persistence.enabled=true`, The chart will mounts a [Persistent Volume](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) volume at the `/var/lib/cnosdb` path. The volume is created using dynamic volume provisioning, by default. 
 
 ### Extra Configuration
 A toml configuration can be expressed by inline expression, `demo.foo=bar` is equal to this:

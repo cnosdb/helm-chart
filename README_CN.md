@@ -58,13 +58,14 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 
 ### 通用参数
 
-| 名称             | 描述                                   | 默认值  |
-| ---------------- | -------------------------------------- | ------- |
-| nameOverride     | 部分覆盖 common.names.fullname的字符串 | ""      |
-| fullnameOverride | 完全覆盖 common.names.fullname的字符串 | ""      |
-| architecture     | 安装的架构(目前只支持cluster)          | cluster |
+| 名称             | 描述                                                 | 默认值  |
+| ---------------- | ---------------------------------------------------- | ------- |
+| nameOverride     | 部分覆盖 common.names.fullname的字符串               | ""      |
+| fullnameOverride | 完全覆盖 common.names.fullname的字符串               | ""      |
+| architecture     | 安装的架构,可选的值: separation, bundle 或 singleton | cluster |
 
 ### Meta参数
+**当架构是`separation`或`bundle`时生效**
 
 | 名称                                  | 描述                               | 默认值            |
 | ------------------------------------- | ---------------------------------- | ----------------- |
@@ -88,9 +89,9 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | meta.persistence.storageClass         | 持久化存储的存储类                 | ""                |
 | meta.persistence.accessModes          | 持久化存储的访问模式               | ["ReadWriteOnce"] |
 | meta.persistence.size                 | 持久化存储的大小                   | 1Gi               |
-| meta.persistence.existingClaim        | 使用已存在的持久化存储声明         | ""                |
 
 ### Tskv参数
+**当架构是`separation`时生效**
 
 | 名称                                  | 描述                                 | 默认值            |
 | ------------------------------------- | ------------------------------------ | ----------------- |
@@ -122,9 +123,9 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | tskv.persistence.storageClass         | 持久化存储的存储类                   | ""                |
 | tskv.persistence.accessModes          | 持久化存储的访问模式                 | ["ReadWriteOnce"] |
 | tskv.persistence.size                 | 持久化存储的大小                     | 1Gi               |
-| tskv.persistence.existingClaim        | 使用已存在的持久化存储声明           | ""                |
 
 ### Query参数
+**当架构是`separation`时生效**
 
 | 名称                                   | 描述                                  | 默认值    |
 | -------------------------------------- | ------------------------------------- | --------- |
@@ -152,22 +153,47 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | query.service.loadBalancerIP           | Cnosdb query 服务负载均衡 IP          | ""        |
 | query.service.loadBalancerSourceRanges | Cnosdb query 服务负载均衡源           | []        |
 
+### QueryTskv参数
+**当架构是`bundle`时生效**
+
+| 名称                                       | 描述                                       | 默认值            |
+| ------------------------------------------ | ------------------------------------------ | ----------------- |
+| queryTskv.replicaCount                     | Cnosdb query_tskv 部署的副本数             | 2                 |
+| queryTskv.terminationGracePeriodSeconds    | 优雅终结Cnosdb query_tskv 副本pod的时间    | 10                |
+| queryTskv.extraConf                        | Cnosdb query_tskv 副本节点的覆盖配置       | {}                |
+| queryTskv.resources.limits                 | Cnosdb query_tskv 副本容器的资源限制       | {}                |
+| queryTskv.resources.requests               | Cnosdb query_tskv 副本容器资源请求         | {}                |
+| queryTskv.affinity                         | Cnosdb query_tskv 副本pods的亲和性配置     | {}                |
+| queryTskv.nodeSelector                     | Cnosdb query_tskv 副本pods的节点选择配置   | {}                |
+| queryTskv.tolerations                      | Cnosdb query_tskv 副本pods容忍配置         | []                |
+| queryTskv.service.type                     | Cnosdb query_tskv 服务类型                 | ClusterIP         |
+| queryTskv.service.ports.http               | Cnosdb query_tskv 服务的http端口           | 8902              |
+| queryTskv.service.ports.grpc               | Cnosdb query_tskv 服务的grpc端口           | 8903              |
+| queryTskv.service.ports.flight             | Cnosdb query_tskv 服务的flight rpc端口     | 8904              |
+| queryTskv.service.ports.tcp                | Cnosdb query_tskv 服务的tcp端口            | 8905              |
+| queryTskv.service.ports.vector             | Cnosdb query_tskv 服务的vector端口         | 8906              |
+| queryTskv.service.nodePorts.http           | Cnosdb query_tskv 服务的http节点端口       | ""                |
+| queryTskv.service.nodePorts.grpc           | Cnosdb query_tskv 服务的grpc节点端口       | ""                |
+| queryTskv.service.nodePorts.flight         | Cnosdb query_tskv 服务的flight rpc节点端口 | ""                |
+| queryTskv.service.nodePorts.tcp            | Cnosdb query_tskv 服务的tcp节点端口        | ""                |
+| queryTskv.service.nodePorts.vector         | Cnosdb query_tskv 服务的vector节点端口     | ""                |
+| queryTskv.service.clusterIP                | Cnosdb query_tskv 服务的集群IP             | ""                |
+| queryTskv.service.externalTrafficPolicy    | Cnosdb query_tskv 服务外部流量策略         | Cluster           |
+| queryTskv.service.annotations              | Cnosdb query_tskv 服务的额外注释           | {}                |
+| queryTskv.service.loadBalancerIP           | Cnosdb query_tskv 服务负载均衡 IP          | ""                |
+| queryTskv.service.loadBalancerSourceRanges | Cnosdb query_tskv 服务负载均衡源           | []                |
+| queryTskv.persistence.enabled              | 持久化存储的开关                           | false             |
+| queryTskv.persistence.storageClass         | 持久化存储的存储类                         | ""                |
+| queryTskv.persistence.accessModes          | 持久化存储的访问模式                       | ["ReadWriteOnce"] |
+| queryTskv.persistence.size                 | 持久化存储的大小                           | 1Gi               |
 
 ## 提示
-在删除chart实例的时候不会移除PV
+在删除chart实例的时候不会移除`PV`,除非手动删除`PVC`
 
 ### Persistence
 
-chart 会挂载 [持久卷](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) 到`/var/lib/cnosdb` 目录. 默认情况下,会动态创建`pvc`,但是也可以指定一个已存在的`pvc`, 如果已经有现成的pvc了, 那么可以在安装的时候可以指定
+如果您通过`[queryTskv | tskv | meta].persistence.enabled=true`开启了持久化。chart 会挂载 [持久卷](https://kubernetes.io/docs/concepts/storage/persistent-volumes/) 到`/var/lib/cnosdb` 目录. 默认情况下,会动态创建`PVC`
 
-### Existing PersistentVolumeClaims
-
-1. 创建 PersistentVolume
-2. 创建 PersistentVolumeClaim
-3. 安装 chart
-```sh
-helm install --set meta.persistence.existingClaim=PVC_NAME my-cnosdb cnosdb/cnosdb
-```
 
 ### 额外配置
 toml 配置可以通过一行表达式表示, `demo.foo=bar` 和下面是相等的
