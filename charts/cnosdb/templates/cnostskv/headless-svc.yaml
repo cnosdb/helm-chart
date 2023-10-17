@@ -9,18 +9,16 @@ metadata:
     {{- include "cnosdb.labels" . | nindent 4 }}
 spec:
   ports:
-    - port: {{ .Values.tskv.service.ports.http }}
-      targetPort: http
+    - port: 8902
       name: http
-    - port: {{ .Values.tskv.service.ports.grpc }}
-      targetPort: grpc
+    - port: 8903
       name: grpc
-    - port: {{ .Values.tskv.service.ports.flight }}
-      targetPort: flight
+    - port: 8904
       name: flight
-    - port: {{ .Values.tskv.service.ports.tcp }}
-      targetPort: tcp
+    - port: 8905
       name: tcp
+    - port: 8906
+      name: vector
   clusterIP: None
   selector:
     cnosdb.com/app: cnosdb

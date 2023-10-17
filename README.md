@@ -108,10 +108,12 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | tskv.service.ports.grpc               | Cnosdb tskv replicas service grpc port                                          | 8903              |
 | tskv.service.ports.flight             | Cnosdb tskv replicas service flight port                                        | 8904              |
 | tskv.service.ports.tcp                | Cnosdb tskv replicas service tcp port                                           | 8905              |
+| tskv.service.ports.vector             | Cnosdb tskv replicas service vector port                                        | 8906              |
 | tskv.service.nodePorts.http           | http Node port for Cnosdb tskv replicas                                         | ""                |
 | tskv.service.nodePorts.grpc           | grpc Node port for Cnosdb tskv replicas                                         | ""                |
 | tskv.service.nodePorts.flight         | flight Node port for Cnosdb tskv replicas                                       | ""                |
 | tskv.service.nodePorts.tcp            | tcp Node port for Cnosdb tskv replicas                                          | ""                |
+| tskv.service.nodePorts.vector         | vector Node port for Cnosdb tskv replicas                                       | ""                |
 | tskv.service.clusterIP                | Cnosdb tskv replicas service Cluster IP                                         | ""                |
 | tskv.service.externalTrafficPolicy    | Cnosdb tskv replicas service external traffic policy                            | Cluster           |
 | tskv.service.annotations              | Additional custom annotations for Cnosdb tskv replicas service                  | {}                |
@@ -136,9 +138,15 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | query.tolerations                      | Tolerations for Cnosdb query replicas pods assignment            | []        |
 | query.service.type                     | Cnosdb query replicas service type                               | ClusterIP |
 | query.service.ports.http               | Cnosdb query replicas service http port                          | 8902      |
+| query.service.ports.grpc               | Cnosdb query replicas service grpc port                          | 8903      |
 | query.service.ports.flight             | Cnosdb query replicas service flight port                        | 8904      |
+| query.service.ports.tcp                | Cnosdb query replicas service tcp port                           | 8905      |
+| query.service.ports.vector             | Cnosdb query replicas service vector port                        | 8906      |
 | query.service.nodePorts.http           | http Node port for Cnosdb query replicas                         | ""        |
+| query.service.nodePorts.grpc           | grpc Node port for Cnosdb query replicas                         | ""        |
 | query.service.nodePorts.flight         | flight Node port for Cnosdb query replicas                       | ""        |
+| query.service.nodePorts.tcp            | tcp Node port for Cnosdb query replicas                          | ""        |
+| query.service.nodePorts.vector         | vector Node port for Cnosdb query replicas                       | ""        |
 | query.service.clusterIP                | Cnosdb query replicas service Cluster IP                         | ""        |
 | query.service.externalTrafficPolicy    | Cnosdb query replicas service external traffic policy            | Cluster   |
 | query.service.annotations              | Additional custom annotations for Cnosdb query replicas service  | {}        |

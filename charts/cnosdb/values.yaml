@@ -59,11 +59,13 @@ tskv:
       grpc: 8903
       flight: 8904
       tcp: 8905
+      vector: 8906
     nodePorts:
       http: ""
       grpc: ""
       flight: ""
       tcp: ""
+      vector: ""
     clusterIP: ""
     externalTrafficPolicy: Cluster
     annotations: {}
@@ -89,10 +91,16 @@ query:
     type: ClusterIP
     ports:
       http: 8902
+      grpc: 8903
       flight: 8904
+      tcp: 8905
+      vector: 8906
     nodePorts:
       http: ""
+      grpc: ""
       flight: ""
+      tcp: ""
+      vector: ""
     clusterIP: ""
     externalTrafficPolicy: Cluster
     annotations: {}

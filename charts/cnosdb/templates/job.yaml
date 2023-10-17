@@ -30,7 +30,7 @@ spec:
             - name: META_SVC_NAME
               value: {{ include "cnosdb.fullname" . -}}-meta
             - name: META_SVC_PORT
-              value: "{{ .Values.meta.service.port }}"
+              value: "8901"
             - name: META_STS_NAME
               value: {{ include "cnosdb.fullname" . -}}-meta
             - name: META_REPLICAS

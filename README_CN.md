@@ -107,10 +107,12 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | tskv.service.ports.grpc               | Cnosdb tskv 服务的grpc端口           | 8903              |
 | tskv.service.ports.flight             | Cnosdb tskv 服务的flight rpc端口     | 8904              |
 | tskv.service.ports.tcp                | Cnosdb tskv 服务的tcp端口            | 8905              |
+| tskv.service.ports.vector             | Cnosdb tskv 服务的vector端口         | 8906              |
 | tskv.service.nodePorts.http           | Cnosdb tskv 服务的http节点端口       | ""                |
 | tskv.service.nodePorts.grpc           | Cnosdb tskv 服务的grpc节点端口       | ""                |
 | tskv.service.nodePorts.flight         | Cnosdb tskv 服务的flight rpc节点端口 | ""                |
 | tskv.service.nodePorts.tcp            | Cnosdb tskv 服务的tcp节点端口        | ""                |
+| tskv.service.nodePorts.vector         | Cnosdb tskv 服务的vector节点端口     | ""                |
 | tskv.service.clusterIP                | Cnosdb tskv 服务的集群IP             | ""                |
 | tskv.service.externalTrafficPolicy    | Cnosdb tskv 服务外部流量策略         | Cluster           |
 | tskv.service.annotations              | Cnosdb tskv 服务的额外注释           | {}                |
@@ -135,9 +137,15 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | query.tolerations                      | Cnosdb query 副本pods容忍配置         | []        |
 | query.service.type                     | Cnosdb query 服务类型                 | ClusterIP |
 | query.service.ports.http               | Cnosdb query 服务的http端口           | 8902      |
+| query.service.ports.grpc               | Cnosdb query 服务的grpc端口           | 8903      |
 | query.service.ports.flight             | Cnosdb query 服务的flight rpc端口     | 8904      |
+| query.service.ports.tcp                | Cnosdb query 服务的tcp端口            | 8905      |
+| query.service.ports.vector             | Cnosdb query 服务的vector端口         | 8906      |
 | query.service.nodePorts.http           | Cnosdb query 服务的http节点端口       | ""        |
+| query.service.nodePorts.grpc           | Cnosdb query 服务的grpc节点端口       | ""        |
 | query.service.nodePorts.flight         | Cnosdb query 服务的flight rpc节点端口 | ""        |
+| query.service.nodePorts.tcp            | Cnosdb query 服务的tcp节点端口        | ""        |
+| query.service.nodePorts.vector         | Cnosdb query 服务的vector节点端口     | ""        |
 | query.service.clusterIP                | Cnosdb query 服务的集群IP             | ""        |
 | query.service.externalTrafficPolicy    | Cnosdb query 服务外部流量策略         | Cluster   |
 | query.service.annotations              | Cnosdb query 服务的额外注释           | {}        |

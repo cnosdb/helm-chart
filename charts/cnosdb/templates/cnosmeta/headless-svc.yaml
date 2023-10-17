@@ -9,9 +9,8 @@ metadata:
     {{- include "cnosdb.labels" . | nindent 4 }}
 spec:
   ports:
-    - port: {{ .Values.meta.service.port }}
+    - port: 8901
       name: meta
-      targetPort: meta
   clusterIP: None
   selector:
     cnosdb.com/app: cnosdb

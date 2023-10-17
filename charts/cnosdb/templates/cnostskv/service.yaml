@@ -49,6 +49,12 @@ spec:
       {{- if and (or (eq .Values.tskv.service.type "NodePort") (eq .Values.tskv.service.type "LoadBalancer")) .Values.tskv.service.nodePorts.tcp }}
       nodePort: {{ .Values.tskv.service.nodePorts.tcp }}
       {{- end }}
+    - port: {{ .Values.tskv.service.ports.vector }}
+      targetPort: vector
+      name: vector
+      {{- if and (or (eq .Values.tskv.service.type "NodePort") (eq .Values.tskv.service.type "LoadBalancer")) .Values.tskv.service.nodePorts.vector }}
+      nodePort: {{ .Values.tskv.service.nodePorts.vector }}
+      {{- end }}
   selector:
     cnosdb.com/app: cnosdb
     cnosdb.com/role: tskv

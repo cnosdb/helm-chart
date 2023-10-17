@@ -31,11 +31,29 @@ spec:
       {{- if and (or (eq .Values.query.service.type "NodePort") (eq .Values.query.service.type "LoadBalancer")) .Values.query.service.nodePorts.http }}
       nodePort: {{ .Values.query.service.nodePorts.http }}
       {{- end }}
+    - port: {{ .Values.query.service.ports.grpc }}
+      targetPort: grpc
+      name: grpc
+      {{- if and (or (eq .Values.query.service.type "NodePort") (eq .Values.query.service.type "LoadBalancer")) .Values.query.service.nodePorts.grpc }}
+      nodePort: {{ .Values.query.service.nodePorts.grpc }}
+      {{- end }}
     - port: {{ .Values.query.service.ports.flight }}
       targetPort: flight
       name: flight
       {{- if and (or (eq .Values.query.service.type "NodePort") (eq .Values.query.service.type "LoadBalancer")) .Values.query.service.nodePorts.flight }}
       nodePort: {{ .Values.query.service.nodePorts.flight }}
+      {{- end }}
+    - port: {{ .Values.query.service.ports.tcp }}
+      targetPort: tcp
+      name: tcp
+      {{- if and (or (eq .Values.query.service.type "NodePort") (eq .Values.query.service.type "LoadBalancer")) .Values.query.service.nodePorts.tcp }}
+      nodePort: {{ .Values.query.service.nodePorts.tcp }}
+      {{- end }}
+    - port: {{ .Values.query.service.ports.vector }}
+      targetPort: vector
+      name: vector
+      {{- if and (or (eq .Values.query.service.type "NodePort") (eq .Values.query.service.type "LoadBalancer")) .Values.query.service.nodePorts.vector }}
+      nodePort: {{ .Values.query.service.nodePorts.vector }}
       {{- end }}
   selector:
     cnosdb.com/app: cnosdb
