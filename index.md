@@ -187,6 +187,41 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | queryTskv.persistence.accessModes          | Persistent Volume access modes                                                        | ["ReadWriteOnce"] |
 | queryTskv.persistence.size                 | Persistent Volume size                                                                | 1Gi               |
 
+### Singleton Parameters
+**Active when architecture is `singleton`**
+
+| Name                                       | Description                                                                 | Value             |
+| ------------------------------------------ | --------------------------------------------------------------------------- | ----------------- |
+| singleton.extraConf                        | Configuration for Cnosdb singleton node                                     | {}                |
+| singleton.resources.limits                 | The resources limits for the Cnosdb singleton container                     | {}                |
+| singleton.resources.requests               | The requested resources for the Cnosdb singleton container                  | {}                |
+| singleton.affinity                         | Affinity for Cnosdb singleton pod assignment                                | {}                |
+| singleton.nodeSelector                     | Node labels for Cnosdb singleton pod assignment                             | {}                |
+| singleton.tolerations                      | Tolerations for Cnosdb singleton pod assignment                             | []                |
+| singleton.service.type                     | Cnosdb singleton service type                                               | ClusterIP         |
+| singleton.service.ports.meta               | Cnosdb singleton service meta port                                          | 8901              |
+| singleton.service.ports.http               | Cnosdb singleton service http port                                          | 8902              |
+| singleton.service.ports.grpc               | Cnosdb singleton service grpc port                                          | 8903              |
+| singleton.service.ports.flight             | Cnosdb singleton service flight port                                        | 8904              |
+| singleton.service.ports.tcp                | Cnosdb singleton service tcp port                                           | 8905              |
+| singleton.service.ports.vector             | Cnosdb singleton service vector port                                        | 8906              |
+| singleton.service.nodePorts.meta           | meta Node port for Cnosdb singleton                                         | ""                |
+| singleton.service.nodePorts.http           | http Node port for Cnosdb singleton                                         | ""                |
+| singleton.service.nodePorts.grpc           | grpc Node port for Cnosdb singleton                                         | ""                |
+| singleton.service.nodePorts.flight         | flight Node port for Cnosdb singleton                                       | ""                |
+| singleton.service.nodePorts.tcp            | tcp Node port for Cnosdb singleton                                          | ""                |
+| singleton.service.nodePorts.vector         | vector Node port for Cnosdb singleton                                       | ""                |
+| singleton.service.clusterIP                | Cnosdb singleton service Cluster IP                                         | ""                |
+| singleton.service.externalTrafficPolicy    | Cnosdb singleton service external traffic policy                            | Cluster           |
+| singleton.service.annotations              | Additional custom annotations for Cnosdb singleton service                  | {}                |
+| singleton.service.loadBalancerIP           | Cnosdb singleton service Load Balancer IP                                   | ""                |
+| singleton.service.loadBalancerSourceRanges | Cnosdb singleton service Load Balancer sources                              | []                |
+| singleton.persistence.enabled              | Enable persistence on Cnosdb singleton nodes using Persistent Volume Claims | false             |
+| singleton.persistence.storageClass         | Persistent Volume storage class                                             | ""                |
+| singleton.persistence.accessModes          | Persistent Volume access modes                                              | ["ReadWriteOnce"] |
+| singleton.persistence.size                 | Persistent Volume size                                                      | 1Gi               |
+| singleton.persistence.existingClaim        | Name of an existing PVC                                                     | ""                |
+
 ## Tips
 `PV` will not be removed when delete a cnosdb helm release unless delete `PVC` manully.
 
