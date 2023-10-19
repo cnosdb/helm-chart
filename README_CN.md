@@ -187,6 +187,41 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | queryTskv.persistence.accessModes          | 持久化存储的访问模式                       | ["ReadWriteOnce"] |
 | queryTskv.persistence.size                 | 持久化存储的大小                           | 1Gi               |
 
+### Singleton参数
+**当架构是`singleton`时生效**
+
+| 名称                                       | 描述                                      | 默认值            |
+| ------------------------------------------ | ----------------------------------------- | ----------------- |
+| singleton.extraConf                        | Cnosdb singleton 节点的覆盖配置           | {}                |
+| singleton.resources.limits                 | Cnosdb singleton 容器的资源限制           | {}                |
+| singleton.resources.requests               | Cnosdb singleton 容器资源请求             | {}                |
+| singleton.affinity                         | Cnosdb singleton pods的亲和性配置         | {}                |
+| singleton.nodeSelector                     | Cnosdb singleton pods的节点选择配置       | {}                |
+| singleton.tolerations                      | Cnosdb singleton pods容忍配置             | []                |
+| singleton.service.type                     | Cnosdb singleton 服务类型                 | ClusterIP         |
+| singleton.service.ports.meta               | Cnosdb singleton 服务的meta端口           | 8901              |
+| singleton.service.ports.http               | Cnosdb singleton 服务的http端口           | 8902              |
+| singleton.service.ports.grpc               | Cnosdb singleton 服务的grpc端口           | 8903              |
+| singleton.service.ports.flight             | Cnosdb singleton 服务的flight rpc端口     | 8904              |
+| singleton.service.ports.tcp                | Cnosdb singleton 服务的tcp端口            | 8905              |
+| singleton.service.ports.vector             | Cnosdb singleton 服务的vector端口         | 8906              |
+| singleton.service.nodePorts.meta           | Cnosdb singleton 服务的meta节点端口       | ""                |
+| singleton.service.nodePorts.http           | Cnosdb singleton 服务的http节点端口       | ""                |
+| singleton.service.nodePorts.grpc           | Cnosdb singleton 服务的grpc节点端口       | ""                |
+| singleton.service.nodePorts.flight         | Cnosdb singleton 服务的flight rpc节点端口 | ""                |
+| singleton.service.nodePorts.tcp            | Cnosdb singleton 服务的tcp节点端口        | ""                |
+| singleton.service.nodePorts.vector         | Cnosdb singleton 服务的vector节点端口     | ""                |
+| singleton.service.clusterIP                | Cnosdb singleton 服务的集群IP             | ""                |
+| singleton.service.externalTrafficPolicy    | Cnosdb singleton 服务外部流量策略         | Cluster           |
+| singleton.service.annotations              | Cnosdb singleton 服务的额外注释           | {}                |
+| singleton.service.loadBalancerIP           | Cnosdb singleton 服务负载均衡 IP          | ""                |
+| singleton.service.loadBalancerSourceRanges | Cnosdb singleton 服务负载均衡源           | []                |
+| singleton.persistence.enabled              | 持久化存储的开关                          | false             |
+| singleton.persistence.storageClass         | 持久化存储的存储类                        | ""                |
+| singleton.persistence.accessModes          | 持久化存储的访问模式                      | ["ReadWriteOnce"] |
+| singleton.persistence.size                 | 持久化存储的大小                          | 1Gi               |
+| singleton.persistence.existingClaim        | 已经存在的PVC的名称                       | ""                |
+
 ## 提示
 在删除chart实例的时候不会移除`PV`,除非手动删除`PVC`
 

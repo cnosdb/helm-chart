@@ -1,0 +1,109 @@
+{{- if eq .Values.architecture "singleton" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cnosdb.fullname" . -}}-singleton
+  labels:
+    cnosdb.com/app: cnosdb
+    cnosdb.com/role: singleton
+    cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+    {{- include "cnosdb.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      cnosdb.com/app: cnosdb
+      cnosdb.com/role: singleton
+      cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        cnosdb.com/app: cnosdb
+        cnosdb.com/role: singleton
+        cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+    spec:
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.singleton.affinity }}
+      affinity: {{- include "cnosdb.toYaml" (dict "value" .Values.singleton.affinity ) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.singleton.nodeSelector }}
+      nodeSelector: {{- include "cnosdb.toYaml" (dict "value" .Values.singleton.nodeSelector ) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.singleton.tolerations }}
+      tolerations: {{- include "cnosdb.toYaml" (dict "value" .Values.singleton.tolerations ) | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: fetch-conf
+          image: "{{ .Values.image.cnosdb.repository }}:{{ .Values.image.cnosdb.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["cp","/etc/cnosdb/cnosdb.conf","/etc/initconf/default.conf"]
+          volumeMounts:
+            - name: config
+              mountPath: "/etc/initconf"
+        - name: init-conf
+          image: "{{ .Values.image.clusterConfTool.repository }}:{{ .Values.image.clusterConfTool.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: CNOSDB_ROLE
+              value: singleton
+            - name: NAMESPACE
+              value: {{ .Release.Namespace }}
+            - name: SVC_NAME
+              value: {{ include "cnosdb.fullname" . -}}-singleton-svc
+            - name: CLUSTER_INSTANCE_NAME
+              value: {{ include "cnosdb.fullname" . }}-singleton
+            - name: CONF_FROM_USER
+              value: '{{ .Values.singleton.extraConf | toJson }}'
+          args: ["-type", "conf"]
+          volumeMounts:
+            - name: config
+              mountPath: "/etc/initconf"
+      containers:
+        - name: cnosdb-singleton
+          image: "{{ .Values.image.cnosdb.repository }}:{{ .Values.image.cnosdb.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/bash
+            - -c
+            - |
+              cnosdb run -M singleton --config /etc/cnosdb/cnosdb.conf
+          ports:
+            - containerPort: 8901
+              name: meta
+            - containerPort: 8902
+              name: http
+            - containerPort: 8903
+              name: grpc
+            - containerPort: 8904
+              name: flight
+            - containerPort: 8905
+              name: tcp
+            - containerPort: 8906
+              name: vector
+          {{- if .Values.singleton.resources }}
+          resources: {{- toYaml .Values.singleton.resources | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: config
+              mountPath: "/etc/cnosdb"
+            - name: singleton-data
+              mountPath: "/var/lib/cnosdb"
+      volumes:
+        - name: config
+          emptyDir: {}
+  {{- if not .Values.singleton.persistence.enabled }}
+        - name: singleton-data
+          emptyDir: {}
+  {{- else if .Values.singleton.persistence.existingClaim }}
+        - name: singleton-data
+          persistentVolumeClaim:
+            claimName: {{ printf "%s" (tpl .Values.singleton.persistence.existingClaim .) }}
+  {{- else }}
+        - name: singleton-data
+          persistentVolumeClaim:
+            claimName: {{ printf "cnosdb-data-%s-singleton" (include "cnosdb.fullname" .)  }}
+  {{- end }}
+{{- end }}

@@ -20,6 +20,10 @@ const QueryTskv = "query_tskv"
 const Query = "query"
 const TSKV = "tskv"
 const META = "meta"
+const SINGLETON = "singleton"
+
+const checkJsonPath = "membership_config.membership.configs"
+const checkJsonPathUnderOk = "Ok.membership_config.membership.configs"
 
 type StartType string
 
@@ -134,6 +138,8 @@ func generateConf() {
 	switch role {
 	case META:
 		err = setMeta(conf)
+	case SINGLETON:
+		err = setSingleton(conf)
 	default:
 		metaAddr, err = setTskvOrQuery(role, conf)
 	}
@@ -145,11 +151,20 @@ func generateConf() {
 	if os.Getenv("DEBUG") == "true" {
 		fmt.Println(conf.String())
 	}
-	if role != META {
+	if role != META && role != SINGLETON {
 		waitingMeta(metaAddr)
 	}
 }
 
+func setSingleton(conf *toml.Tree) error {
+	clusterName := os.Getenv("CLUSTER_INSTANCE_NAME")
+	namespace := os.Getenv("NAMESPACE")
+	svcName := os.Getenv("SVC_NAME")
+	conf.Set("host", fmt.Sprintf("%s.%s", svcName, namespace))
+	conf.Set("deployment.mode", "singleton")
+	conf.Set("cluster.name", clusterName)
+	return nil
+}
 func setMeta(conf *toml.Tree) error {
 	hostname := os.Getenv("HOSTNAME")
 	namespace := os.Getenv("NAMESPACE")
@@ -256,6 +271,8 @@ func checkConfEnv(role string) (string, bool) {
 		envs = append(envs, "HOSTNAME", "NAMESPACE", "META_SVC_NAME", "META_STS_NAME", "META_SVC_PORT", "META_REPLICAS", "SVC_NAME", "CLUSTER_INSTANCE_NAME")
 	case META:
 		envs = append(envs, "HOSTNAME", "NAMESPACE", "META_SVC_NAME", "CLUSTER_INSTANCE_NAME")
+	case SINGLETON:
+		envs = append(envs, "NAMESPACE", "SVC_NAME", "CLUSTER_INSTANCE_NAME")
 	}
 	return doCheckEnv(envs)
 }
@@ -282,11 +299,16 @@ func doCheckEnv(envs []string) (string, bool) {
 
 func waitingMeta(metaAddr string) {
 	client := resty.New()
-	checkJsonPath := "membership_config.membership.configs"
 	url := fmt.Sprintf("http://%s/metrics", metaAddr)
 	resp, reqErr := client.R().Get(url)
+	var configs gjson.Result
 	if reqErr == nil {
-		configs := gjson.Get(resp.String(), checkJsonPath)
+		ok := gjson.Get(resp.String(), "Ok")
+		if ok.Exists() {
+			configs = gjson.Get(resp.String(), checkJsonPathUnderOk)
+		} else {
+			configs = gjson.Get(resp.String(), checkJsonPath)
+		}
 		if !configs.Exists() || len(configs.Array()) == 0 {
 			reqErr = clusterNotReadyErr
 		}
@@ -299,7 +321,12 @@ func waitingMeta(metaAddr string) {
 		resp, reqErr = client.R().Get(url)
 		if reqErr == nil {
 			fmt.Println(resp.String())
-			configs := gjson.Get(resp.String(), checkJsonPath)
+			ok := gjson.Get(resp.String(), "Ok")
+			if ok.Exists() {
+				configs = gjson.Get(resp.String(), checkJsonPathUnderOk)
+			} else {
+				configs = gjson.Get(resp.String(), checkJsonPath)
+			}
 			if configs.Exists() && len(configs.Array()) > 0 {
 				continue
 			}

@@ -1,3 +1,4 @@
+{{- if not (eq .Values.architecture "singleton") }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -37,3 +38,4 @@ spec:
               value: "{{ .Values.meta.replicaCount }}"
           args: ["-type", "completion"]
       restartPolicy: Never
+{{- end }}

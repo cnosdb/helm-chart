@@ -41,7 +41,6 @@ meta:
     accessModes:
       - ReadWriteOnce
     size: 1Gi
-    existingClaim: ""
 tskv:
   replicaCount: 2
   terminationGracePeriodSeconds: 10
@@ -77,7 +76,6 @@ tskv:
     accessModes:
       - ReadWriteOnce
     size: 1Gi
-    existingClaim: ""
 query:
   replicaCount: 2
   extraConf: {}
@@ -125,6 +123,41 @@ queryTskv:
       tcp: 8905
       vector: 8906
     nodePorts:
+      http: ""
+      grpc: ""
+      flight: ""
+      tcp: ""
+      vector: ""
+    clusterIP: ""
+    externalTrafficPolicy: Cluster
+    annotations: {}
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+  persistence:
+    enabled: false
+    storageClass: ""
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+singleton:
+  extraConf: {}
+  resources:
+    limits: {}
+    requests: {}
+  affinity: {}
+  nodeSelector: {}
+  tolerations: []
+  service:
+    type: ClusterIP
+    ports:
+      meta: 8901
+      http: 8902
+      grpc: 8903
+      flight: 8904
+      tcp: 8905
+      vector: 8906
+    nodePorts:
+      meta: ""
       http: ""
       grpc: ""
       flight: ""

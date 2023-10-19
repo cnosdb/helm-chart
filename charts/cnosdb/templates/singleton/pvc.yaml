@@ -1,0 +1,22 @@
+{{- if and (eq .Values.architecture "singleton") (.Values.singleton.persistence.enabled) (not .Values.singleton.persistence.existingClaim) }}
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ printf "cnosdb-data-%s-singleton" (include "cnosdb.fullname" .)  }}
+  labels:
+    cnosdb.com/app: cnosdb
+    cnosdb.com/role: singleton
+    cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+    {{- include "cnosdb.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/resource-policy": keep
+spec:
+  accessModes:
+  {{- range .Values.singleton.persistence.accessModes }}
+    - {{ . | quote }}
+  {{- end }}
+  storageClassName: {{ .Values.singleton.persistence.storageClass }}
+  resources:
+    requests:
+      storage: {{ .Values.singleton.persistence.size | quote }}
+{{- end }}

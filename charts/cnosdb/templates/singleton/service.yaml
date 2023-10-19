@@ -1,0 +1,69 @@
+{{- if eq .Values.architecture "singleton" }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cnosdb.fullname" . -}}-singleton-svc
+  labels:
+    cnosdb.com/app: cnosdb
+    cnosdb.com/role: singleton
+    cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+    {{- include "cnosdb.labels" . | nindent 4 }}
+  {{- if  .Values.singleton.service.annotations }}
+  annotations: {{- include "cnosdb.toYaml" ( dict "value" .Values.singleton.service.annotations ) | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.singleton.service.type }}
+  {{- if and .Values.singleton.service.clusterIP (eq .Values.singleton.service.type "ClusterIP") }}
+  clusterIP: {{ .Values.singleton.service.clusterIP }}
+  {{- end }}
+  {{- if (or (eq .Values.singleton.service.type "LoadBalancer") (eq .Values.singleton.service.type "NodePort")) }}
+  externalTrafficPolicy: {{ .Values.singleton.service.externalTrafficPolicy | quote }}
+  {{- end }}
+  {{- if eq .Values.singleton.service.type "LoadBalancer" }}
+  loadBalancerSourceRanges: {{ .Values.singleton.service.loadBalancerSourceRanges }}
+  {{- end }}
+  {{- if (and (eq .Values.singleton.service.type "LoadBalancer") (not (empty .Values.singleton.service.loadBalancerIP))) }}
+  loadBalancerIP: {{ .Values.singleton.service.loadBalancerIP }}
+  {{- end }}
+  ports:
+    - port: {{ .Values.singleton.service.ports.meta }}
+      targetPort: meta
+      name: meta
+      {{- if and (or (eq .Values.singleton.service.type "NodePort") (eq .Values.singleton.service.type "LoadBalancer")) .Values.singleton.service.nodePorts.meta }}
+      nodePort: {{ .Values.singleton.service.nodePorts.meta }}
+      {{- end }}
+    - port: {{ .Values.singleton.service.ports.http }}
+      targetPort: http
+      name: http
+      {{- if and (or (eq .Values.singleton.service.type "NodePort") (eq .Values.singleton.service.type "LoadBalancer")) .Values.singleton.service.nodePorts.http }}
+      nodePort: {{ .Values.singleton.service.nodePorts.http }}
+      {{- end }}
+    - port: {{ .Values.singleton.service.ports.grpc }}
+      targetPort: grpc
+      name: grpc
+      {{- if and (or (eq .Values.singleton.service.type "NodePort") (eq .Values.singleton.service.type "LoadBalancer")) .Values.singleton.service.nodePorts.grpc }}
+      nodePort: {{ .Values.singleton.service.nodePorts.grpc }}
+      {{- end }}
+    - port: {{ .Values.singleton.service.ports.flight }}
+      targetPort: flight
+      name: flight
+      {{- if and (or (eq .Values.singleton.service.type "NodePort") (eq .Values.singleton.service.type "LoadBalancer")) .Values.singleton.service.nodePorts.flight }}
+      nodePort: {{ .Values.singleton.service.nodePorts.flight }}
+      {{- end }}
+    - port: {{ .Values.singleton.service.ports.tcp }}
+      targetPort: tcp
+      name: tcp
+      {{- if and (or (eq .Values.singleton.service.type "NodePort") (eq .Values.singleton.service.type "LoadBalancer")) .Values.singleton.service.nodePorts.tcp }}
+      nodePort: {{ .Values.singleton.service.nodePorts.tcp }}
+      {{- end }}
+    - port: {{ .Values.singleton.service.ports.vector }}
+      targetPort: vector
+      name: vector
+      {{- if and (or (eq .Values.singleton.service.type "NodePort") (eq .Values.singleton.service.type "LoadBalancer")) .Values.singleton.service.nodePorts.vector }}
+      nodePort: {{ .Values.singleton.service.nodePorts.vector }}
+      {{- end }}
+  selector:
+    cnosdb.com/app: cnosdb
+    cnosdb.com/role: singleton
+    cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
+{{- end }}
