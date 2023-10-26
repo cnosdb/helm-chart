@@ -8,53 +8,53 @@ metadata:
     cnosdb.com/role: query_tskv
     cnosdb.com/cluster: {{ include "cnosdb.fullname" . }}
     {{- include "cnosdb.labels" . | nindent 4 }}
-  {{- if  .Values.tskv.service.annotations }}
-  annotations: {{- include "cnosdb.toYaml" ( dict "value" .Values.tskv.service.annotations ) | nindent 4 }}
+  {{- if  .Values.queryTskv.service.annotations }}
+  annotations: {{- include "cnosdb.toYaml" ( dict "value" .Values.queryTskv.service.annotations ) | nindent 4 }}
   {{- end }}
 spec:
-  type: {{ .Values.tskv.service.type }}
-  {{- if and .Values.tskv.service.clusterIP (eq .Values.tskv.service.type "ClusterIP") }}
-  clusterIP: {{ .Values.tskv.service.clusterIP }}
+  type: {{ .Values.queryTskv.service.type }}
+  {{- if and .Values.queryTskv.service.clusterIP (eq .Values.queryTskv.service.type "ClusterIP") }}
+  clusterIP: {{ .Values.queryTskv.service.clusterIP }}
   {{- end }}
-  {{- if (or (eq .Values.tskv.service.type "LoadBalancer") (eq .Values.tskv.service.type "NodePort")) }}
-  externalTrafficPolicy: {{ .Values.tskv.service.externalTrafficPolicy | quote }}
+  {{- if (or (eq .Values.queryTskv.service.type "LoadBalancer") (eq .Values.queryTskv.service.type "NodePort")) }}
+  externalTrafficPolicy: {{ .Values.queryTskv.service.externalTrafficPolicy | quote }}
   {{- end }}
-  {{- if eq .Values.tskv.service.type "LoadBalancer" }}
-  loadBalancerSourceRanges: {{ .Values.tskv.service.loadBalancerSourceRanges }}
+  {{- if eq .Values.queryTskv.service.type "LoadBalancer" }}
+  loadBalancerSourceRanges: {{ .Values.queryTskv.service.loadBalancerSourceRanges }}
   {{- end }}
-  {{- if (and (eq .Values.tskv.service.type "LoadBalancer") (not (empty .Values.tskv.service.loadBalancerIP))) }}
-  loadBalancerIP: {{ .Values.tskv.service.loadBalancerIP }}
+  {{- if (and (eq .Values.queryTskv.service.type "LoadBalancer") (not (empty .Values.queryTskv.service.loadBalancerIP))) }}
+  loadBalancerIP: {{ .Values.queryTskv.service.loadBalancerIP }}
   {{- end }}
   ports:
-    - port: {{ .Values.tskv.service.ports.http }}
+    - port: {{ .Values.queryTskv.service.ports.http }}
       targetPort: http
       name: http
-      {{- if and (or (eq .Values.tskv.service.type "NodePort") (eq .Values.tskv.service.type "LoadBalancer")) .Values.tskv.service.nodePorts.http }}
-      nodePort: {{ .Values.tskv.service.nodePorts.http }}
+      {{- if and (or (eq .Values.queryTskv.service.type "NodePort") (eq .Values.queryTskv.service.type "LoadBalancer")) .Values.queryTskv.service.nodePorts.http }}
+      nodePort: {{ .Values.queryTskv.service.nodePorts.http }}
       {{- end }}
-    - port: {{ .Values.tskv.service.ports.grpc }}
+    - port: {{ .Values.queryTskv.service.ports.grpc }}
       targetPort: grpc
       name: grpc
-      {{- if and (or (eq .Values.tskv.service.type "NodePort") (eq .Values.tskv.service.type "LoadBalancer")) .Values.tskv.service.nodePorts.grpc }}
-      nodePort: {{ .Values.tskv.service.nodePorts.grpc }}
+      {{- if and (or (eq .Values.queryTskv.service.type "NodePort") (eq .Values.queryTskv.service.type "LoadBalancer")) .Values.queryTskv.service.nodePorts.grpc }}
+      nodePort: {{ .Values.queryTskv.service.nodePorts.grpc }}
       {{- end }}
-    - port: {{ .Values.tskv.service.ports.flight }}
+    - port: {{ .Values.queryTskv.service.ports.flight }}
       targetPort: flight
       name: flight
-      {{- if and (or (eq .Values.tskv.service.type "NodePort") (eq .Values.tskv.service.type "LoadBalancer")) .Values.tskv.service.nodePorts.flight }}
-      nodePort: {{ .Values.tskv.service.nodePorts.flight }}
+      {{- if and (or (eq .Values.queryTskv.service.type "NodePort") (eq .Values.queryTskv.service.type "LoadBalancer")) .Values.queryTskv.service.nodePorts.flight }}
+      nodePort: {{ .Values.queryTskv.service.nodePorts.flight }}
       {{- end }}
-    - port: {{ .Values.tskv.service.ports.tcp }}
+    - port: {{ .Values.queryTskv.service.ports.tcp }}
       targetPort: tcp
       name: tcp
-      {{- if and (or (eq .Values.tskv.service.type "NodePort") (eq .Values.tskv.service.type "LoadBalancer")) .Values.tskv.service.nodePorts.tcp }}
-      nodePort: {{ .Values.tskv.service.nodePorts.tcp }}
+      {{- if and (or (eq .Values.queryTskv.service.type "NodePort") (eq .Values.queryTskv.service.type "LoadBalancer")) .Values.queryTskv.service.nodePorts.tcp }}
+      nodePort: {{ .Values.queryTskv.service.nodePorts.tcp }}
       {{- end }}
-    - port: {{ .Values.tskv.service.ports.vector }}
+    - port: {{ .Values.queryTskv.service.ports.vector }}
       targetPort: vector
       name: vector
-      {{- if and (or (eq .Values.tskv.service.type "NodePort") (eq .Values.tskv.service.type "LoadBalancer")) .Values.tskv.service.nodePorts.vector }}
-      nodePort: {{ .Values.tskv.service.nodePorts.vector }}
+      {{- if and (or (eq .Values.queryTskv.service.type "NodePort") (eq .Values.queryTskv.service.type "LoadBalancer")) .Values.queryTskv.service.nodePorts.vector }}
+      nodePort: {{ .Values.queryTskv.service.nodePorts.vector }}
       {{- end }}
   selector:
     cnosdb.com/app: cnosdb

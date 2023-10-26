@@ -60,7 +60,7 @@ spec:
             - name: META_REPLICAS
               value: "{{ .Values.meta.replicaCount }}"
             - name: SVC_NAME
-              value: {{ include "cnosdb.fullname" . -}}-query
+              value: {{ include "cnosdb.fullname" . -}}-query-svc
             - name: CLUSTER_INSTANCE_NAME
               value: {{ include "cnosdb.fullname" . }}
             - name: CONF_FROM_USER
