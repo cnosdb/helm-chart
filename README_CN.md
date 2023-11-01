@@ -88,7 +88,7 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | meta.persistence.enabled              | 持久化存储的开关                   | false             |
 | meta.persistence.storageClass         | 持久化存储的存储类                 | ""                |
 | meta.persistence.accessModes          | 持久化存储的访问模式               | ["ReadWriteOnce"] |
-| meta.persistence.size                 | 持久化存储的大小                   | 1Gi               |
+| meta.persistence.size                 | 持久化存储的大小                   | 10Gi              |
 
 ### Tskv参数
 **当架构是`separation`时生效**
@@ -122,7 +122,7 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | tskv.persistence.enabled              | 持久化存储的开关                     | false             |
 | tskv.persistence.storageClass         | 持久化存储的存储类                   | ""                |
 | tskv.persistence.accessModes          | 持久化存储的访问模式                 | ["ReadWriteOnce"] |
-| tskv.persistence.size                 | 持久化存储的大小                     | 1Gi               |
+| tskv.persistence.size                 | 持久化存储的大小                     | 10Gi              |
 
 ### Query参数
 **当架构是`separation`时生效**
@@ -185,7 +185,7 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | queryTskv.persistence.enabled              | 持久化存储的开关                           | false             |
 | queryTskv.persistence.storageClass         | 持久化存储的存储类                         | ""                |
 | queryTskv.persistence.accessModes          | 持久化存储的访问模式                       | ["ReadWriteOnce"] |
-| queryTskv.persistence.size                 | 持久化存储的大小                           | 1Gi               |
+| queryTskv.persistence.size                 | 持久化存储的大小                           | 10Gi              |
 
 ### Singleton参数
 **当架构是`singleton`时生效**
@@ -219,7 +219,7 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | singleton.persistence.enabled              | 持久化存储的开关                          | false             |
 | singleton.persistence.storageClass         | 持久化存储的存储类                        | ""                |
 | singleton.persistence.accessModes          | 持久化存储的访问模式                      | ["ReadWriteOnce"] |
-| singleton.persistence.size                 | 持久化存储的大小                          | 1Gi               |
+| singleton.persistence.size                 | 持久化存储的大小                          | 10Gi              |
 | singleton.persistence.existingClaim        | 已经存在的PVC的名称                       | ""                |
 
 ## 提示

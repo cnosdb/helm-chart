@@ -40,7 +40,7 @@ meta:
     storageClass: ""
     accessModes:
       - ReadWriteOnce
-    size: 1Gi
+    size: 10Gi
 tskv:
   replicaCount: 2
   terminationGracePeriodSeconds: 10
@@ -75,7 +75,7 @@ tskv:
     storageClass: ""
     accessModes:
       - ReadWriteOnce
-    size: 1Gi
+    size: 10Gi
 query:
   replicaCount: 2
   extraConf: {}
@@ -138,7 +138,7 @@ queryTskv:
     storageClass: ""
     accessModes:
       - ReadWriteOnce
-    size: 1Gi
+    size: 10Gi
 singleton:
   extraConf: {}
   resources:
@@ -173,5 +173,5 @@ singleton:
     storageClass: ""
     accessModes:
       - ReadWriteOnce
-    size: 1Gi
+    size: 10Gi
     existingClaim: ""

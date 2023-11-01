@@ -89,7 +89,7 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | meta.persistence.enabled              | Enable persistence on Cnosdb meta replicas nodes using Persistent Volume Claims | false             |
 | meta.persistence.storageClass         | Persistent Volume storage class                                                 | ""                |
 | meta.persistence.accessModes          | Persistent Volume access modes                                                  | ["ReadWriteOnce"] |
-| meta.persistence.size                 | Persistent Volume size                                                          | 1Gi               |
+| meta.persistence.size                 | Persistent Volume size                                                          | 10Gi              |
 
 ### Tskv Parameters
 **Active when architecture is `separation`**
@@ -123,7 +123,7 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | tskv.persistence.enabled              | Enable persistence on Cnosdb tskv replicas nodes using Persistent Volume Claims | false             |
 | tskv.persistence.storageClass         | Persistent Volume storage class                                                 | ""                |
 | tskv.persistence.accessModes          | Persistent Volume access modes                                                  | ["ReadWriteOnce"] |
-| tskv.persistence.size                 | Persistent Volume size                                                          | 1Gi               |
+| tskv.persistence.size                 | Persistent Volume size                                                          | 10Gi              |
 
 ### Query Parameters
 **Active when architecture is `separation`**
@@ -186,7 +186,7 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | queryTskv.persistence.enabled              | Enable persistence on Cnosdb query_tskv replicas nodes using Persistent Volume Claims | false             |
 | queryTskv.persistence.storageClass         | Persistent Volume storage class                                                       | ""                |
 | queryTskv.persistence.accessModes          | Persistent Volume access modes                                                        | ["ReadWriteOnce"] |
-| queryTskv.persistence.size                 | Persistent Volume size                                                                | 1Gi               |
+| queryTskv.persistence.size                 | Persistent Volume size                                                                | 10Gi              |
 
 ### Singleton Parameters
 **Active when architecture is `singleton`**
@@ -220,7 +220,7 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 | singleton.persistence.enabled              | Enable persistence on Cnosdb singleton nodes using Persistent Volume Claims | false             |
 | singleton.persistence.storageClass         | Persistent Volume storage class                                             | ""                |
 | singleton.persistence.accessModes          | Persistent Volume access modes                                              | ["ReadWriteOnce"] |
-| singleton.persistence.size                 | Persistent Volume size                                                      | 1Gi               |
+| singleton.persistence.size                 | Persistent Volume size                                                      | 10Gi              |
 | singleton.persistence.existingClaim        | Name of an existing PVC                                                     | ""                |
 
 ## Tips
