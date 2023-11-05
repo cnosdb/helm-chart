@@ -26,18 +26,24 @@ const checkJsonPath = "membership_config.membership.configs"
 const checkJsonPathUnderOk = "Ok.membership_config.membership.configs"
 
 type StartType string
+type ContextType string
 
 const Conf StartType = "conf"
 const Completion StartType = "completion"
+
+const Helm ContextType = "helm"
+const Operator ContextType = "operator"
 
 var clusterNotReadyErr = errors.New("cluster not ready")
 
 func main() {
 	var starterType string
+	var contextType string
 	flag.StringVar(&starterType, "type", "conf", "starter type: conf or completion")
+	flag.StringVar(&contextType, "context", "helm", "starter type: conf or completion")
 	flag.Parse()
 	if starterType == string(Conf) {
-		generateConf()
+		generateConf(contextType)
 	} else if starterType == string(Completion) {
 		completion()
 	} else {
@@ -113,7 +119,7 @@ func completion() {
 	fmt.Println("=------------all finished------------=")
 }
 
-func generateConf() {
+func generateConf(contextType string) {
 	role := os.Getenv("CNOSDB_ROLE")
 	if role == "" {
 		exitErr(errors.New("env CNOSDB_ROLE is missing"))
@@ -134,6 +140,8 @@ func generateConf() {
 	f, err := os.Create(targetConfPath)
 	exitErr(err)
 	defer f.Close()
+	err = setConfFromUser(conf, contextType)
+	exitErr(err)
 	var metaAddr string
 	switch role {
 	case META:
@@ -143,8 +151,6 @@ func generateConf() {
 	default:
 		metaAddr, err = setTskvOrQuery(role, conf)
 	}
-	exitErr(err)
-	err = setConfFromUser(conf)
 	exitErr(err)
 	conf.WriteTo(f)
 	fmt.Println("=------------generate config finished------------=")
@@ -208,25 +214,39 @@ func setTskvOrQuery(role string, conf *toml.Tree) (string, error) {
 	return metaAddrs[0], nil
 }
 
-func setConfFromUser(conf *toml.Tree) error {
-	userConf := os.Getenv("CONF_FROM_USER")
-	if userConf == "" || userConf == "{}" {
-		return nil
-	}
-	confMap := make(map[string]interface{})
-	err := json.Unmarshal([]byte(userConf), &confMap)
-	if err != nil {
-		return err
-	}
-	for k, v := range confMap {
-		switch v.(type) {
-		case int:
-			conf.Set(k, v.(int64))
-		case string:
-			conf.Set(k, v.(string))
-		default:
-			conf.Set(k, v)
+func setConfFromUser(conf *toml.Tree, contextType string) error {
+	if contextType == string(Helm) {
+		userConf := os.Getenv("CONF_FROM_USER")
+		if userConf == "" || userConf == "{}" {
+			return nil
 		}
+		confMap := make(map[string]interface{})
+		err := json.Unmarshal([]byte(userConf), &confMap)
+		if err != nil {
+			return err
+		}
+		for k, v := range confMap {
+			switch v.(type) {
+			case int:
+				conf.Set(k, v.(int64))
+			case string:
+				conf.Set(k, v.(string))
+			default:
+				conf.Set(k, v)
+			}
+		}
+	} else if contextType == string(Operator) {
+		userConfPath := "/etc/initconf/user.conf"
+		userConf, err := toml.LoadFile(userConfPath)
+		if err != nil {
+			return err
+		}
+		paths := getTomlPaths(userConf)
+		for _, k := range paths {
+			conf.Set(k, userConf.Get(k))
+		}
+	} else {
+		return errors.New("unsupported start type: " + contextType)
 	}
 	return nil
 }
@@ -342,4 +362,27 @@ func exitErr(err error) {
 		fmt.Printf("found error：%v", err)
 		os.Exit(1)
 	}
+}
+
+func getTomlPaths(tree *toml.Tree) []string {
+	var result []string
+	m := tree.ToMap()
+	getTomlPathsRecursive(m, "", &result)
+	return result
+}
+func getTomlPathsRecursive(current any, path string, result *[]string) {
+	switch c := current.(type) {
+	case nil:
+	case map[string]interface{}:
+		for k := range c {
+			if path == "" {
+				getTomlPathsRecursive(c[k], k, result)
+			} else {
+				getTomlPathsRecursive(c[k], path+"."+k, result)
+			}
+		}
+	default:
+		*result = append(*result, path)
+	}
+	return
 }
