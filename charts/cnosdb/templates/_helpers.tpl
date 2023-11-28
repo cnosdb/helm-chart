@@ -71,3 +71,16 @@ Usage:
 {{- $value := typeIs "string" .value | ternary .value (.value | toYaml) }}
 {{- $value }}
 {{- end -}}
+
+{{/*
+To Yaml
+Usage:
+{{ include "cnosdb.extraConfig" ( dict "value" .Values "conf" .Values.singleton.extraConf)}}
+*/}}
+{{- define "cnosdb.extraConfig" -}}
+{{- if not (empty .value.license) }}
+{{- set .conf "license_file" (printf "%s/license.json" (.value.licensePath | trimSuffix "/")) | toJson}}
+{{- else -}}
+{{- .conf | toJson }}
+{{- end -}}
+{{- end -}}

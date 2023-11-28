@@ -67,7 +67,7 @@ spec:
             - name: CLUSTER_INSTANCE_NAME
               value: {{ include "cnosdb.fullname" . }}
             - name: CONF_FROM_USER
-              value: '{{ .Values.queryTskv.extraConf | toJson }}'
+              value: '{{ include "cnosdb.extraConfig" (dict "value" .Values "conf" .Values.queryTskv.extraConf) }}'
           args: ["-type", "conf"]
           volumeMounts:
             - name: config
@@ -100,9 +100,22 @@ spec:
               mountPath: "/etc/cnosdb"
             - name: querytskv-data
               mountPath: "/var/lib/cnosdb"
+            {{- if not (empty .Values.license) }}
+            - name: license
+              mountPath: "{{ .Values.licensePath | trimSuffix "/" }}/license.json"
+              subPath: "license.json"
+            {{- end }}
       volumes:
         - name: config
           emptyDir: {}
+      {{- if not (empty .Values.license) }}
+        - configMap:
+            items:
+            - key: license
+              path: license.json
+            name: {{ include "cnosdb.fullname" . -}}-license
+          name: license
+      {{- end }}
   {{- if not .Values.queryTskv.persistence.enabled }}
         - name: querytskv-data
           emptyDir: {}
