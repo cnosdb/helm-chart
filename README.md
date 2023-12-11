@@ -59,11 +59,13 @@ helm install my-cnosdb -f values.yaml cnosdb/cnosdb -ncnosdb
 
 ### Common Parameters
 
-| Name             | Description                                                                     | Value      |
-| ---------------- | ------------------------------------------------------------------------------- | ---------- |
-| nameOverride     | String to partially override common.names.fullname                              | ""         |
-| fullnameOverride | String to fully override common.names.fullname                                  | ""         |
-| architecture     | The architecture of installing. Allowed values: separation, bundle or singleton | separation |
+| Name             | Description                                                                     | Value         |
+| ---------------- | ------------------------------------------------------------------------------- | ------------- |
+| nameOverride     | String to partially override common.names.fullname                              | ""            |
+| fullnameOverride | String to fully override common.names.fullname                                  | ""            |
+| architecture     | The architecture of installing. Allowed values: separation, bundle or singleton | separation    |
+| license          | license json                                                                    | ""            |
+| licensePath      | The directory path to license file                                              | "/etc/cnosdb" |
 
 ### Meta Parameters
 **Active when architecture is `separation` or `bundle`**

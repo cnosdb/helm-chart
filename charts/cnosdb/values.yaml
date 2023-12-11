@@ -12,7 +12,8 @@ image:
     tag: latest
   pullPolicy: IfNotPresent
   pullSecrets: []
-
+license: ""
+licensePath: "/etc/cnosdb"
 # Allowed values: `singleton` `bundle` or `separation`
 architecture: separation
 meta:
