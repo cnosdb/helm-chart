@@ -149,7 +149,7 @@ func generateConf(contextType string) {
 	case SINGLETON:
 		err = setSingleton(conf)
 	default:
-		metaAddr, err = setTskvOrQuery(role, conf)
+		metaAddr, err = setTskvOrQuery(role, conf, contextType)
 	}
 	exitErr(err)
 	conf.WriteTo(f)
@@ -186,7 +186,7 @@ func setMeta(conf *toml.Tree) error {
 	return nil
 }
 
-func setTskvOrQuery(role string, conf *toml.Tree) (string, error) {
+func setTskvOrQuery(role string, conf *toml.Tree, contextType string) (string, error) {
 	hostname := os.Getenv("HOSTNAME")
 	namespace := os.Getenv("NAMESPACE")
 	metaSvcName := os.Getenv("META_SVC_NAME")
@@ -199,16 +199,31 @@ func setTskvOrQuery(role string, conf *toml.Tree) (string, error) {
 	}
 	svcName := os.Getenv("SVC_NAME")
 	clusterName := os.Getenv("CLUSTER_INSTANCE_NAME")
-	id, err := getId(role, hostname)
-	if err != nil {
-		return "", err
+	if contextType == string(Helm) {
+		id, err := getId(role, hostname)
+		if err != nil {
+			return "", err
+		}
+		conf.Set("node_basic.node_id", int64(id))
+	} else if contextType == string(Operator) {
+		opUrl := os.Getenv("OperatorUrl")
+		client := resty.New()
+		url := fmt.Sprintf("http://%s/node-id/%s/%s/%s/%s", opUrl, namespace, clusterName, role, hostname)
+		resp, err := client.R().Get(url)
+		if err != nil {
+			return "", err
+		}
+		id, err := strconv.ParseInt(resp.String(), 10, 64)
+		if err != nil {
+			return "", err
+		}
+		conf.Set("node_basic.node_id", id)
 	}
 	metaAddrs := generateMetaAddrs(metaReplicas, metaSvcName, metaStsName, metaSvcPort, namespace)
 	if err != nil {
 		return "", err
 	}
 	conf.Set("host", generateHost(hostname, svcName, namespace, role == Query))
-	conf.Set("node_basic.node_id", int64(id))
 	conf.Set("cluster.meta_service_addr", metaAddrs)
 	conf.Set("cluster.name", clusterName)
 	return metaAddrs[0], nil
