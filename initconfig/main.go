@@ -208,7 +208,7 @@ func setTskvOrQuery(role string, conf *toml.Tree, contextType string) (string, e
 	} else if contextType == string(Operator) {
 		opUrl := os.Getenv("OperatorUrl")
 		client := resty.New()
-		url := fmt.Sprintf("http://%s/node-id/%s/%s/%s/%s", opUrl, namespace, clusterName, role, hostname)
+		url := fmt.Sprintf("http://%s/api/v1/node-id/%s/%s/%s/%s", opUrl, namespace, clusterName, role, hostname)
 		resp, err := client.R().Get(url)
 		if err != nil {
 			return "", err
