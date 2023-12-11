@@ -206,18 +206,26 @@ func setTskvOrQuery(role string, conf *toml.Tree, contextType string) (string, e
 		}
 		conf.Set("node_basic.node_id", int64(id))
 	} else if contextType == string(Operator) {
-		opUrl := os.Getenv("OperatorUrl")
-		client := resty.New()
-		url := fmt.Sprintf("http://%s/api/v1/node-id/%s/%s/%s/%s", opUrl, namespace, clusterName, role, hostname)
-		resp, err := client.R().Get(url)
-		if err != nil {
-			return "", err
+		if role == Query {
+			id, err := getId(role, hostname)
+			if err != nil {
+				return "", err
+			}
+			conf.Set("node_basic.node_id", int64(id))
+		} else {
+			opUrl := os.Getenv("OperatorUrl")
+			client := resty.New()
+			url := fmt.Sprintf("http://%s/api/v1/node-id/%s/%s/%s/%s", opUrl, namespace, clusterName, role, hostname)
+			resp, err := client.R().Get(url)
+			if err != nil {
+				return "", err
+			}
+			id, err := strconv.ParseInt(resp.String(), 10, 64)
+			if err != nil {
+				return "", err
+			}
+			conf.Set("node_basic.node_id", id)
 		}
-		id, err := strconv.ParseInt(resp.String(), 10, 64)
-		if err != nil {
-			return "", err
-		}
-		conf.Set("node_basic.node_id", id)
 	}
 	metaAddrs := generateMetaAddrs(metaReplicas, metaSvcName, metaStsName, metaSvcPort, namespace)
 	if err != nil {
