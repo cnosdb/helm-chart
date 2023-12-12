@@ -214,13 +214,8 @@ func setTskvOrQuery(role string, conf *toml.Tree, contextType string) (string, e
 			conf.Set("node_basic.node_id", int64(id))
 		} else {
 			opUrl := os.Getenv("OperatorUrl")
-			client := resty.New()
-			url := fmt.Sprintf("http://%s/api/v1/node-id/%s/%s/%s/%s", opUrl, namespace, clusterName, role, hostname)
-			resp, err := client.R().Get(url)
-			if err != nil {
-				return "", err
-			}
-			id, err := strconv.ParseInt(resp.String(), 10, 64)
+			url := fmt.Sprintf("%s/api/v1/node-id/%s/%s/%s/%s", opUrl, namespace, clusterName, role, hostname)
+			id, err := fetchId(url)
 			if err != nil {
 				return "", err
 			}
@@ -407,5 +402,38 @@ func getTomlPathsRecursive(current any, path string, result *[]string) {
 	default:
 		*result = append(*result, path)
 	}
-	return
+}
+
+func fetchId(url string) (int64, error) {
+	client := resty.New()
+	resp, err := client.R().Get(url)
+	if err == nil {
+		d := gjson.Get(resp.String(), "data")
+		if d.Exists() {
+			id, err := strconv.ParseInt(d.String(), 10, 64)
+			if err != nil {
+				return 0, err
+			}
+			return id, nil
+		}
+	}
+
+	for err != nil {
+		fmt.Println("waiting fetchId for 10s....")
+		time.Sleep(10 * time.Second)
+		fmt.Printf("fetchId: %s\n", url)
+		resp, err = client.R().Get(url)
+		if err == nil {
+			d := gjson.Get(resp.String(), "data")
+			if d.Exists() {
+				id, err := strconv.ParseInt(d.String(), 10, 64)
+				if err != nil {
+					return 0, err
+				}
+				return id, nil
+			}
+		}
+
+	}
+	return 0, errors.New("fetch id failed: " + resp.String())
 }
