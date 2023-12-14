@@ -143,13 +143,14 @@ func generateConf(contextType string) {
 	err = setConfFromUser(conf, contextType)
 	exitErr(err)
 	var metaAddr string
+	useOldConf := testOldConf(conf)
 	switch role {
 	case META:
-		err = setMeta(conf)
+		err = setMeta(conf, useOldConf)
 	case SINGLETON:
-		err = setSingleton(conf)
+		err = setSingleton(conf, useOldConf)
 	default:
-		metaAddr, err = setTskvOrQuery(role, conf, contextType)
+		metaAddr, err = setTskvOrQuery(role, conf, contextType, useOldConf)
 	}
 	exitErr(err)
 	conf.WriteTo(f)
@@ -162,16 +163,22 @@ func generateConf(contextType string) {
 	}
 }
 
-func setSingleton(conf *toml.Tree) error {
+func setSingleton(conf *toml.Tree, useOldConf bool) error {
 	clusterName := os.Getenv("CLUSTER_INSTANCE_NAME")
 	namespace := os.Getenv("NAMESPACE")
 	svcName := os.Getenv("SVC_NAME")
-	conf.Set("host", fmt.Sprintf("%s.%s", svcName, namespace))
+	hostKey := "global.host"
+	clusterNameKey := "global.cluster_name"
+	if useOldConf {
+		hostKey = "host"
+		clusterNameKey = "cluster.name"
+	}
+	conf.Set(hostKey, fmt.Sprintf("%s.%s", svcName, namespace))
 	conf.Set("deployment.mode", "singleton")
-	conf.Set("cluster.name", clusterName)
+	conf.Set(clusterNameKey, clusterName)
 	return nil
 }
-func setMeta(conf *toml.Tree) error {
+func setMeta(conf *toml.Tree, useOldConf bool) error {
 	hostname := os.Getenv("HOSTNAME")
 	namespace := os.Getenv("NAMESPACE")
 	metaSvcName := os.Getenv("META_SVC_NAME")
@@ -186,7 +193,7 @@ func setMeta(conf *toml.Tree) error {
 	return nil
 }
 
-func setTskvOrQuery(role string, conf *toml.Tree, contextType string) (string, error) {
+func setTskvOrQuery(role string, conf *toml.Tree, contextType string, useOldConf bool) (string, error) {
 	hostname := os.Getenv("HOSTNAME")
 	namespace := os.Getenv("NAMESPACE")
 	metaSvcName := os.Getenv("META_SVC_NAME")
@@ -199,19 +206,31 @@ func setTskvOrQuery(role string, conf *toml.Tree, contextType string) (string, e
 	}
 	svcName := os.Getenv("SVC_NAME")
 	clusterName := os.Getenv("CLUSTER_INSTANCE_NAME")
+	// keys
+	nodeIdKey := "global.node_id"
+	hostKey := "global.host"
+	metaAddrKey := "meta.service_addr"
+	clusterNameKey := "global.cluster_name"
+	if useOldConf {
+		nodeIdKey = "node_basic.node_id"
+		hostKey = "host"
+		metaAddrKey = "cluster.meta_service_addr"
+		clusterNameKey = "cluster.name"
+	}
+
 	if contextType == string(Helm) {
 		id, err := getId(role, hostname)
 		if err != nil {
 			return "", err
 		}
-		conf.Set("node_basic.node_id", int64(id))
+		conf.Set(nodeIdKey, int64(id))
 	} else if contextType == string(Operator) {
 		if role == Query {
 			id, err := getId(role, hostname)
 			if err != nil {
 				return "", err
 			}
-			conf.Set("node_basic.node_id", int64(id))
+			conf.Set(nodeIdKey, int64(id))
 		} else {
 			opUrl := os.Getenv("OperatorUrl")
 			url := fmt.Sprintf("%s/api/v1/node-id/%s/%s/%s/%s", opUrl, namespace, clusterName, role, hostname)
@@ -219,16 +238,16 @@ func setTskvOrQuery(role string, conf *toml.Tree, contextType string) (string, e
 			if err != nil {
 				return "", err
 			}
-			conf.Set("node_basic.node_id", id)
+			conf.Set(nodeIdKey, id)
 		}
 	}
 	metaAddrs := generateMetaAddrs(metaReplicas, metaSvcName, metaStsName, metaSvcPort, namespace)
 	if err != nil {
 		return "", err
 	}
-	conf.Set("host", generateHost(hostname, svcName, namespace, role == Query))
-	conf.Set("cluster.meta_service_addr", metaAddrs)
-	conf.Set("cluster.name", clusterName)
+	conf.Set(hostKey, generateHost(hostname, svcName, namespace, role == Query))
+	conf.Set(metaAddrKey, metaAddrs)
+	conf.Set(clusterNameKey, clusterName)
 	return metaAddrs[0], nil
 }
 
@@ -436,4 +455,8 @@ func fetchId(url string) (int64, error) {
 
 	}
 	return 0, errors.New("fetch id failed: " + resp.String())
+}
+
+func testOldConf(conf *toml.Tree) bool {
+	return conf.Has("host")
 }
