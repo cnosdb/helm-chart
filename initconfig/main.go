@@ -144,6 +144,7 @@ func generateConf(contextType string) {
 	exitErr(err)
 	var metaAddr string
 	useOldConf := testOldConf(conf)
+	fmt.Printf("use old config: %v \n", useOldConf)
 	switch role {
 	case META:
 		err = setMeta(conf, useOldConf)
@@ -458,5 +459,5 @@ func fetchId(url string) (int64, error) {
 }
 
 func testOldConf(conf *toml.Tree) bool {
-	return conf.Has("host")
+	return conf.Has("node_basic.node_id")
 }
