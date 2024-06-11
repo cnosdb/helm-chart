@@ -1,0 +1,15 @@
+apiVersion: v1
+entries:
+  cnosdb:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-06-11T14:22:09.304378+08:00"
+    description: An Open Source Distributed Time Series Database with high performance,
+      high compression ratio and high usability.
+    digest: 5a5edd93cfc45daa67e76e82da89195606f356e2e6fd073355d08e9730a18d72
+    name: cnosdb
+    type: application
+    urls:
+    - cnosdb.0.1.0.tgz
+    version: 0.1.0
+generated: "2024-06-11T14:22:09.302146+08:00"
