@@ -49,6 +49,8 @@ spec:
           env:
             - name: CNOSDB_ROLE
               value: singleton
+            - name: CNOSDB_VERSION
+              value: {{ .Values.image.cnosdb.tag | default .Chart.AppVersion }}
             - name: NAMESPACE
               value: {{ .Release.Namespace }}
             - name: SVC_NAME

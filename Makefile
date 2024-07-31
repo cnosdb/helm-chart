@@ -1,4 +1,4 @@
-IMAGE_TAG_BASE ?= wyxok/cnosdb-init-config
+IMAGE_TAG_BASE ?= registry.cn-hangzhou.aliyuncs.com/cnosdb/cnosdb-init-config
 DIST ?= dist
 setup-buildx:
 	export cnosdb_build_count=`docker buildx ls |grep -v NAME/NODE|grep -c cnosdb-container`; \

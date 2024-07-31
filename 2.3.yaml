@@ -1,0 +1,21 @@
+image:
+  pullPolicy: Always
+  cnosdbMeta:
+    tag: community-2.3.5.3
+  cnosdb:
+    tag: community-2.3.5.3
+architecture: bundle
+queryTskv:
+  replicaCount: 3
+  persistence:
+    enabled: false
+    size: 10Gi
+  extraConf:
+    heartbeat_interval: '30ms'
+meta:
+  persistence:
+    enabled: false
+    size: 10Gi
+  extraConf:
+    cluster:
+      heartbeat_interval: 30

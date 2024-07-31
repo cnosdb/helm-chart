@@ -8,9 +8,9 @@ image:
     repository: cnosdb/cnosdb
     tag: community-latest
   clusterConfTool:
-    repository: wyxok/cnosdb-init-config
+    repository: registry.cn-hangzhou.aliyuncs.com/cnosdb/cnosdb-init-config
     tag: latest
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   pullSecrets: []
 license: ""
 licensePath: "/etc/cnosdb"

@@ -4,12 +4,13 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"initconfig/model"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/go-resty/resty/v2"
-	"github.com/pelletier/go-toml"
+	"github.com/pelletier/go-toml/v2"
 	"github.com/tidwall/gjson"
 	"k8s.io/apimachinery/pkg/util/json"
 
@@ -21,6 +22,8 @@ const Query = "query"
 const TSKV = "tskv"
 const META = "meta"
 const SINGLETON = "singleton"
+const V3 = "3"
+const V4 = "4"
 
 const checkJsonPath = "membership_config.membership.configs"
 const checkJsonPathUnderOk = "Ok.membership_config.membership.configs"
@@ -121,15 +124,22 @@ func completion() {
 
 func generateConf(contextType string) {
 	role := os.Getenv("CNOSDB_ROLE")
+	fmt.Println("role: " + role)
 	if role == "" {
 		exitErr(errors.New("env CNOSDB_ROLE is missing"))
+	}
+	version := os.Getenv("CNOSDB_VERSION")
+	if version == "" {
+		exitErr(errors.New("env CNOSDB_VERSION is missing"))
 	}
 	msg, pass := checkConfEnv(role)
 	if !pass {
 		exitErr(errors.New(fmt.Sprintf("[%s]The necessary environment variables are missing: %s", role, msg)))
 	}
 	baseConfPath := "/etc/initconf/default.conf"
-	conf, err := toml.LoadFile(baseConfPath)
+	metaAddr, err := setConf(baseConfPath, role, contextType, version)
+	exitErr(err)
+	/* conf, err := toml.LoadFile(baseConfPath)
 	exitErr(err)
 	targetConfPath := ""
 	if role == META {
@@ -142,44 +152,64 @@ func generateConf(contextType string) {
 	defer f.Close()
 	err = setConfFromUser(conf, contextType)
 	exitErr(err)
-	var metaAddr string
-	useOldConf := testOldConf(conf)
-	fmt.Printf("use old config: %v \n", useOldConf)
-	switch role {
-	case META:
-		err = setMeta(conf, useOldConf)
-	case SINGLETON:
-		err = setSingleton(conf, useOldConf)
-	default:
-		metaAddr, err = setTskvOrQuery(role, conf, contextType, useOldConf)
-	}
-	exitErr(err)
-	conf.WriteTo(f)
+	conf.WriteTo(f) */
 	fmt.Println("=------------generate config finished------------=")
-	if os.Getenv("DEBUG") == "true" {
-		fmt.Println(conf.String())
-	}
 	if role != META && role != SINGLETON {
 		waitingMeta(metaAddr)
 	}
 }
 
-func setSingleton(conf *toml.Tree, useOldConf bool) error {
+func setConf(baseConfPath, role, contextType, version string) (string, error) {
+	defaultbyte, err := os.ReadFile(baseConfPath)
+	if err != nil {
+		return "", err
+	}
+
+	if role == META {
+		return "", setMeta(defaultbyte, contextType)
+	} else if role == SINGLETON {
+		return "", setSingleton(defaultbyte, contextType)
+	} else {
+		return setTskvOrQuery(role, defaultbyte, contextType, version)
+	}
+}
+
+func setSingleton(conf []byte, contextType string) error {
+	tskvconfig := model.QueryTskvConfig{}
+	err := toml.Unmarshal(conf, &tskvconfig)
+	if err != nil {
+		return err
+	}
+	err = setConfFromUser(&tskvconfig, contextType)
+	if err != nil {
+		return err
+	}
+	fmt.Println("set singleton", tskvconfig.Cluster.MetaServiceAddr[0])
 	clusterName := os.Getenv("CLUSTER_INSTANCE_NAME")
 	namespace := os.Getenv("NAMESPACE")
 	svcName := os.Getenv("SVC_NAME")
-	hostKey := "global.host"
-	clusterNameKey := "global.cluster_name"
-	if useOldConf {
-		hostKey = "host"
-		clusterNameKey = "cluster.name"
+	tskvconfig.Global.Host = fmt.Sprintf("%s.%s", svcName, namespace)
+	tskvconfig.Global.ClusterName = clusterName
+	tskvconfig.Deployment.Mode = "singleton"
+	data, err := toml.Marshal(tskvconfig)
+	if err != nil {
+		return err
 	}
-	conf.Set(hostKey, fmt.Sprintf("%s.%s", svcName, namespace))
-	conf.Set("deployment.mode", "singleton")
-	conf.Set(clusterNameKey, clusterName)
-	return nil
+	return saveToml(data, "/etc/initconf/cnosdb.conf")
 }
-func setMeta(conf *toml.Tree, useOldConf bool) error {
+
+func setMeta(conf []byte, contextType string) error {
+	metaconfig := model.MetaConfig{}
+	err := toml.Unmarshal(conf, &metaconfig)
+	if err != nil {
+		fmt.Println("unmarshal meta config failed", err.Error())
+		return err
+	}
+	fmt.Println(metaconfig.LicenseFile)
+	err = setConfFromUser(&metaconfig, contextType)
+	if err != nil {
+		return err
+	}
 	hostname := os.Getenv("HOSTNAME")
 	namespace := os.Getenv("NAMESPACE")
 	metaSvcName := os.Getenv("META_SVC_NAME")
@@ -188,13 +218,20 @@ func setMeta(conf *toml.Tree, useOldConf bool) error {
 	if err != nil {
 		return err
 	}
-	conf.Set("host", generateHost(hostname, metaSvcName, namespace, false))
-	conf.Set("id", int64(id))
-	conf.Set("meta_init.cluster_name", clusterName)
-	return nil
+	metaconfig.Host = generateHost(hostname, metaSvcName, namespace, false)
+	metaconfig.ID = int64(id)
+	metaconfig.ClusterName = clusterName
+	metaconfig.MetaInit.ClusterName = clusterName
+	fmt.Println(metaconfig.LicenseFile)
+	data, err := toml.Marshal(metaconfig)
+	if err != nil {
+		fmt.Println("marshal meta config failed", err.Error())
+		return err
+	}
+	return saveToml(data, "/etc/initconf/cnosdb-meta.conf")
 }
 
-func setTskvOrQuery(role string, conf *toml.Tree, contextType string, useOldConf bool) (string, error) {
+func setTskvOrQuery(role string, conf []byte, contextType, version string) (string, error) {
 	hostname := os.Getenv("HOSTNAME")
 	namespace := os.Getenv("NAMESPACE")
 	metaSvcName := os.Getenv("META_SVC_NAME")
@@ -208,25 +245,35 @@ func setTskvOrQuery(role string, conf *toml.Tree, contextType string, useOldConf
 	svcName := os.Getenv("SVC_NAME")
 	clusterName := os.Getenv("CLUSTER_INSTANCE_NAME")
 	// keys
-	nodeIdKey := "global.node_id"
-	hostKey := "global.host"
+	//nodeIdKey := "global.node_id"
+	/* hostKey := "global.host"
 	metaAddrKey := "meta.service_addr"
-	clusterNameKey := "global.cluster_name"
-	if useOldConf {
-		nodeIdKey = "node_basic.node_id"
-		hostKey = "host"
-		metaAddrKey = "cluster.meta_service_addr"
-		clusterNameKey = "cluster.name"
+	clusterNameKey := "global.cluster_name" */
+	tskvconfig := model.QueryTskvConfig{}
+	err = toml.Unmarshal(conf, &tskvconfig)
+	if err != nil {
+		return "", err
 	}
-
+	err = setConfFromUser(&tskvconfig, contextType)
+	if err != nil {
+		return "", err
+	}
+	metaAddrs := generateMetaAddrs(metaReplicas, metaSvcName, metaStsName, metaSvcPort, namespace)
+	if err != nil {
+		return "", err
+	}
 	if contextType == string(Helm) {
 		id, err := getId(role, hostname)
 		if err != nil {
 			return "", err
 		}
-		conf.Set(nodeIdKey, int64(id))
+		tskvconfig.NodeBasic.NodeID = int64(id)
+		tskvconfig.Host = generateHost(hostname, svcName, namespace, role == Query)
+		tskvconfig.Global.NodeID = int64(id)
+		tskvconfig.Global.Host = generateHost(hostname, svcName, namespace, role == Query)
+
 	} else if contextType == string(Operator) {
-		if role == Query {
+		/* if role == Query {
 			id, err := getId(role, hostname)
 			if err != nil {
 				return "", err
@@ -240,41 +287,46 @@ func setTskvOrQuery(role string, conf *toml.Tree, contextType string, useOldConf
 				return "", err
 			}
 			conf.Set(nodeIdKey, id)
-		}
+		} */
 	}
-	metaAddrs := generateMetaAddrs(metaReplicas, metaSvcName, metaStsName, metaSvcPort, namespace)
+	tskvconfig.Cluster.MetaServiceAddr = metaAddrs
+	tskvconfig.Meta.ServiceAddr = metaAddrs
+	tskvconfig.Global.ClusterName = clusterName
+	tskvconfig.Cluster.Name = clusterName
+	//conf.Set(hostKey, generateHost(hostname, svcName, namespace, role == Query))
+	//conf.Set(metaAddrKey, metaAddrs)
+	//conf.Set(clusterNameKey, clusterName)
+	data, err := toml.Marshal(tskvconfig)
 	if err != nil {
 		return "", err
 	}
-	conf.Set(hostKey, generateHost(hostname, svcName, namespace, role == Query))
-	conf.Set(metaAddrKey, metaAddrs)
-	conf.Set(clusterNameKey, clusterName)
-	return metaAddrs[0], nil
+	err = saveToml(data, "/etc/initconf/cnosdb.conf")
+	return metaAddrs[0], err
 }
 
-func setConfFromUser(conf *toml.Tree, contextType string) error {
+func saveToml(data []byte, path string) error {
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	return os.WriteFile(path, data, 0644)
+}
+
+func setConfFromUser(conf any, contextType string) error {
 	if contextType == string(Helm) {
 		userConf := os.Getenv("CONF_FROM_USER")
 		if userConf == "" || userConf == "{}" {
 			return nil
 		}
-		confMap := make(map[string]interface{})
-		err := json.Unmarshal([]byte(userConf), &confMap)
+		fmt.Println("user config: ", userConf)
+		err := json.Unmarshal([]byte(userConf), conf)
 		if err != nil {
+			fmt.Println("unmarshal user config failed", err.Error())
 			return err
 		}
-		for k, v := range confMap {
-			switch v.(type) {
-			case int:
-				conf.Set(k, v.(int64))
-			case string:
-				conf.Set(k, v.(string))
-			default:
-				conf.Set(k, v)
-			}
-		}
 	} else if contextType == string(Operator) {
-		userConfPath := "/etc/initconf/user.conf"
+		/* userConfPath := "/etc/initconf/user.conf"
 		userConf, err := toml.LoadFile(userConfPath)
 		if err != nil {
 			return err
@@ -282,7 +334,7 @@ func setConfFromUser(conf *toml.Tree, contextType string) error {
 		paths := getTomlPaths(userConf)
 		for _, k := range paths {
 			conf.Set(k, userConf.Get(k))
-		}
+		} */
 	} else {
 		return errors.New("unsupported start type: " + contextType)
 	}
@@ -299,7 +351,11 @@ func getId(role, hostname string) (int, error) {
 		}
 		return id, nil
 	}
-	return strconv.Atoi(idstr)
+	id, err := strconv.Atoi(idstr)
+	if err != nil {
+		return 0, err
+	}
+	return id + 1, nil
 }
 
 func generateMetaAddrs(replicas int, metaSvcName, metaStsName, metaSvcPort, namespace string) []string {
@@ -402,12 +458,14 @@ func exitErr(err error) {
 	}
 }
 
-func getTomlPaths(tree *toml.Tree) []string {
-	var result []string
-	m := tree.ToMap()
-	getTomlPathsRecursive(m, "", &result)
-	return result
-}
+/*
+	 func getTomlPaths(tree *toml.Tree) []string {
+		var result []string
+		m := tree.ToMap()
+		getTomlPathsRecursive(m, "", &result)
+		return result
+	}
+*/
 func getTomlPathsRecursive(current any, path string, result *[]string) {
 	switch c := current.(type) {
 	case nil:
@@ -458,6 +516,6 @@ func fetchId(url string) (int64, error) {
 	return 0, errors.New("fetch id failed: " + resp.String())
 }
 
-func testOldConf(conf *toml.Tree) bool {
+/* func testOldConf(conf *toml.Tree) bool {
 	return conf.Has("node_basic.node_id")
-}
+} */
