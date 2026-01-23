@@ -320,10 +320,57 @@ func setConfFromUser(conf any, contextType string) error {
 			return nil
 		}
 		fmt.Println("user config: ", userConf)
-		err := json.Unmarshal([]byte(userConf), conf)
-		if err != nil {
-			fmt.Println("unmarshal user config failed", err.Error())
-			return err
+		
+		// Use gjson to parse and apply only explicitly set fields
+		// This avoids the problem of JSON unmarshaling creating zero values for all fields
+		result := gjson.Parse(userConf)
+		if !result.IsObject() {
+			return errors.New("CONF_FROM_USER must be a JSON object")
+		}
+		
+		// Convert to map and then marshal/unmarshal with mergo
+		// This preserves only the fields that were actually specified
+		switch v := conf.(type) {
+		case *model.QueryTskvConfig:
+			// Marshal current config to JSON, parse both, merge at JSON level, then unmarshal back
+			currentJSON, err := json.Marshal(v)
+			if err != nil {
+				return err
+			}
+			
+			// Merge JSON objects
+			merged, err := mergeJSON(string(currentJSON), userConf)
+			if err != nil {
+				return err
+			}
+			
+			// Unmarshal merged result back into config
+			err = json.Unmarshal([]byte(merged), v)
+			if err != nil {
+				fmt.Println("unmarshal merged config failed", err.Error())
+				return err
+			}
+		case *model.MetaConfig:
+			// Marshal current config to JSON, parse both, merge at JSON level, then unmarshal back
+			currentJSON, err := json.Marshal(v)
+			if err != nil {
+				return err
+			}
+			
+			// Merge JSON objects
+			merged, err := mergeJSON(string(currentJSON), userConf)
+			if err != nil {
+				return err
+			}
+			
+			// Unmarshal merged result back into config
+			err = json.Unmarshal([]byte(merged), v)
+			if err != nil {
+				fmt.Println("unmarshal merged config failed", err.Error())
+				return err
+			}
+		default:
+			return errors.New("unsupported config type")
 		}
 	} else if contextType == string(Operator) {
 		/* userConfPath := "/etc/initconf/user.conf"
@@ -372,6 +419,57 @@ func generateHost(hostname, svcName, namespace string, isQuery bool) string {
 		return fmt.Sprintf("%s.%s", svcName, namespace)
 	}
 	return fmt.Sprintf("%s.%s.%s", hostname, svcName, namespace)
+}
+
+// mergeJSON merges two JSON objects, with override taking precedence
+// This performs a deep merge at the JSON level, preserving only explicitly set fields
+func mergeJSON(base, override string) (string, error) {
+	var baseMap, overrideMap map[string]interface{}
+	
+	if err := json.Unmarshal([]byte(base), &baseMap); err != nil {
+		return "", err
+	}
+	
+	if err := json.Unmarshal([]byte(override), &overrideMap); err != nil {
+		return "", err
+	}
+	
+	// Recursively merge
+	merged := deepMergeMap(baseMap, overrideMap)
+	
+	result, err := json.Marshal(merged)
+	if err != nil {
+		return "", err
+	}
+	
+	return string(result), nil
+}
+
+// deepMergeMap recursively merges two maps
+func deepMergeMap(base, override map[string]interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+	
+	// Copy base
+	for k, v := range base {
+		result[k] = v
+	}
+	
+	// Override with values from override map
+	for k, v := range override {
+		if baseVal, exists := result[k]; exists {
+			// If both are maps, merge recursively
+			if baseMap, baseIsMap := baseVal.(map[string]interface{}); baseIsMap {
+				if overrideMap, overrideIsMap := v.(map[string]interface{}); overrideIsMap {
+					result[k] = deepMergeMap(baseMap, overrideMap)
+					continue
+				}
+			}
+		}
+		// Otherwise, just override
+		result[k] = v
+	}
+	
+	return result
 }
 
 func checkConfEnv(role string) (string, bool) {
